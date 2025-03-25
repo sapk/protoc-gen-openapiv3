@@ -13,7 +13,7 @@ func Example() {
 		"--allow_merge=true",
 		"--include_package_in_tags=false",
 		"--fqn_for_openapi_name=true",
-		"--openapi_configuration=./testdata/test.yaml",
+		"--output=./testdata/test.yaml",
 	})
 	if err != nil {
 		fmt.Println("Error parsing flags:", err)

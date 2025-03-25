@@ -99,13 +99,9 @@ func convertMessageToSchema(parsedFile *ParsedFile, messageName string) *base.Sc
 	}
 
 	if message == nil {
-		return &base.SchemaProxy{
-			/*
-				Schema: &base.Schema{
-					Type: []string{"object"},
-				},
-			*/
-		}
+		return base.CreateSchemaProxy(&base.Schema{
+			Type: []string{"object"},
+		})
 	}
 
 	// Create the schema
@@ -124,20 +120,14 @@ func convertMessageToSchema(parsedFile *ParsedFile, messageName string) *base.Sc
 		}
 	}
 
-	return &base.SchemaProxy{
-		// Schema: schema,
-	}
+	return base.CreateSchemaProxy(schema)
 }
 
 // convertFieldToSchema converts a field to a schema
 func convertFieldToSchema(field *ParsedField) *base.SchemaProxy {
-	return &base.SchemaProxy{
-		/*
-			Schema: &base.Schema{
-				Type: []string{convertProtoTypeToOpenAPIType(field.Type)},
-			},
-		*/
-	}
+	return base.CreateSchemaProxy(&base.Schema{
+		Type: []string{convertProtoTypeToOpenAPIType(field.Type)},
+	})
 }
 
 // convertProtoTypeToOpenAPIType converts a proto type to an OpenAPI type
