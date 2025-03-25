@@ -54,7 +54,7 @@ func TestConvertToOpenAPI(t *testing.T) {
 	assert.NotNil(t, doc)
 
 	// Test document version
-	assert.Equal(t, "3.0.0", doc.Version)
+	assert.Equal(t, "3.1.0", doc.Version)
 
 	// Test info
 	assert.Equal(t, "test.package", doc.Info.Title)
