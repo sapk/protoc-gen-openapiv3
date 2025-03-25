@@ -3,6 +3,7 @@ package generator
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,16 +15,22 @@ import (
 )
 
 func TestParseProtoFile(t *testing.T) {
-	// Run protoc to compile the test proto file
-	cmd := exec.Command("protoc", "--descriptor_set_out=/tmp/test.pb", "--include_imports", "--proto_path=..", "../testdata/test.proto")
+	// Create a temporary directory for the test
+	tmpDir := t.TempDir()
+	pbFile := filepath.Join(tmpDir, "test.pb")
+
+	// Generate descriptor set
+	cmd := exec.Command("protoc", "--descriptor_set_out="+pbFile, "--include_imports", "--proto_path=..", "../testdata/test.proto")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Fatalf("protoc failed: %v\nOutput: %s", err, output)
 	}
 
-	// Read the compiled proto file
-	data, err := os.ReadFile("/tmp/test.pb")
-	require.NoError(t, err)
+	// Read the descriptor set
+	data, err := os.ReadFile(pbFile)
+	if err != nil {
+		t.Fatalf("Failed to read descriptor set: %v", err)
+	}
 
 	// Parse the file descriptor set
 	fdSet := &descriptorpb.FileDescriptorSet{}
