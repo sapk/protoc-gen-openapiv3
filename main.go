@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/sapk/protoc-gen-openapiv3/generator"
 	"google.golang.org/protobuf/compiler/protogen"
@@ -19,6 +20,18 @@ var (
 )
 
 func main() {
+	// Check if we're running in test mode
+	if len(os.Args) > 0 && strings.HasSuffix(os.Args[0], ".test") {
+		// Filter out test-related flags
+		var filteredArgs []string
+		for _, arg := range os.Args[1:] {
+			if !strings.HasPrefix(arg, "-test.") {
+				filteredArgs = append(filteredArgs, arg)
+			}
+		}
+		os.Args = append([]string{os.Args[0]}, filteredArgs...)
+	}
+
 	protogen.Options{
 		ParamFunc: flags.Set,
 	}.Run(func(gen *protogen.Plugin) error {
