@@ -23,5 +23,7 @@ Thumbs.db
 /dist/
 
 # Generated files
+/protoc-gen-openapiv3
 *.pb.go
 *.openapi.json 
+*.openapi.yaml

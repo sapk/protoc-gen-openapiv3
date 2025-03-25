@@ -17,7 +17,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 
 	// Create the root document
 	doc := &high.Document{
-		Version: "3.0.0",
+		Version: "3.1.0",
 		Info: &base.Info{
 			Title:   parsedFile.Package,
 			Version: "1.0.0",
@@ -91,9 +91,9 @@ func convertMethodToPath(method ParsedMethod) string {
 func convertMessageToSchema(parsedFile *ParsedFile, messageName string) *base.SchemaProxy {
 	// Find the message in the parsed file
 	var message *ParsedMessage
-	for _, m := range parsedFile.Messages {
-		if m.Name == messageName {
-			message = &m
+	for i := range parsedFile.Messages {
+		if parsedFile.Messages[i].Name == messageName {
+			message = &parsedFile.Messages[i]
 			break
 		}
 	}
