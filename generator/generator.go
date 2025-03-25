@@ -1,7 +1,8 @@
 package generator
 
 import (
-	"strings"
+	"fmt"
+	"log"
 
 	"google.golang.org/protobuf/compiler/protogen"
 )
@@ -30,23 +31,24 @@ func NewOpenAPIGenerator(gen *protogen.Plugin, options *Options) *OpenAPIGenerat
 
 // Generate processes a single proto file and generates its OpenAPI specification
 func (g *OpenAPIGenerator) Generate(file *protogen.File) error {
-	// TODO: Implement the actual OpenAPI generation logic
-	// This will include:
-	// 1. Parsing the proto file
-	// 2. Extracting service definitions
-	// 3. Processing HTTP annotations
-	// 4. Generating OpenAPI paths and components
+	// Parse the proto file
+	parsedFile, err := g.ParseProtoFile(file)
+	if err != nil {
+		return fmt.Errorf("failed to parse proto file: %w", err)
+	}
+
+	// Temporary debug log of parsedFile until we implement the remaining steps
+	log.Printf("Parsed file details - Package: %s, Services: %d, Messages: %d, Enums: %d",
+		parsedFile.Package,
+		len(parsedFile.Services),
+		len(parsedFile.Messages),
+		len(parsedFile.Enums))
+
+	// TODO: Implement remaining steps using parsedFile
+	// 2. Extracting service definitions from parsedFile.Services
+	// 3. Processing HTTP annotations from parsedFile.Annotations
+	// 4. Generating OpenAPI paths and components using parsedFile.Messages and parsedFile.Enums
 	// 5. Writing the output file
 
 	return nil
-}
-
-// toOpenAPIName converts proto field names to OpenAPI names
-func toOpenAPIName(name string) string {
-	// Convert snake_case to camelCase
-	parts := strings.Split(name, "_")
-	for i := 1; i < len(parts); i++ {
-		parts[i] = strings.Title(parts[i])
-	}
-	return strings.Join(parts, "")
 }
