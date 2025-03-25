@@ -43,9 +43,7 @@ service YourService {
 2. Generate the OpenAPI specification:
 
 ```bash
-protoc -I . \
-  --openapiv3_out=. \
-  your.proto
+go build -o protoc-gen-openapiv3 && protoc --openapiv3_out=output=./testdata/test.openapi.json,output-format=json:. --plugin=protoc-gen-openapiv3=./protoc-gen-openapiv3 --proto_path=./testdata ./testdata/test.proto 
 ```
 
 ## Configuration
@@ -60,9 +58,7 @@ The generator supports various options that can be passed through protoc:
 Example with options:
 
 ```bash
-protoc -I . \
-  --openapiv3_out=allow_merge=true,include_package_in_tags=true:. \
-  your.proto
+go build -o protoc-gen-openapiv3 && protoc --openapiv3_out=output=./testdata/test.openapi.json,output-format=json,allow_merge=true,include_package_in_tags=true:. --plugin=protoc-gen-openapiv3=./protoc-gen-openapiv3 --proto_path=./testdata ./testdata/test.proto 
 ```
 
 ## Contributing
