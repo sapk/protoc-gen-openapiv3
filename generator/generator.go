@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -11,13 +10,22 @@ import (
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
+// OutputFormat represents the format of the output file
+type OutputFormat string
+
+const (
+	FormatJSON OutputFormat = "json"
+	FormatYAML OutputFormat = "yaml"
+)
+
 // Options contains all the configuration options for the OpenAPI generator
 type Options struct {
 	AllowMerge           bool
 	IncludePackageInTags bool
 	FQNForOpenAPIName    bool
 	OpenAPIConfiguration string
-	OutputFile           string // Path to output file, empty means stdout
+	OutputFile           string       // Path to output file, empty means stdout
+	OutputFormat         OutputFormat // Format of the output file (json or yaml)
 }
 
 // OpenAPIGenerator handles the generation of OpenAPI specifications
@@ -28,6 +36,10 @@ type OpenAPIGenerator struct {
 
 // NewOpenAPIGenerator creates a new OpenAPI generator with the given options
 func NewOpenAPIGenerator(gen *protogen.Plugin, options *Options) *OpenAPIGenerator {
+	if options.OutputFormat == "" {
+		options.OutputFormat = FormatYAML
+	}
+
 	return &OpenAPIGenerator{
 		gen:     gen,
 		options: options,
@@ -77,7 +89,7 @@ func (g *OpenAPIGenerator) Generate(file *protogen.File) error {
 	return nil
 }
 
-// writeOutput writes the OpenAPI document to either stdout
+// writeOutput writes the OpenAPI document to either stdout or a file
 func (g *OpenAPIGenerator) writeOutput(doc *high.Document) error {
 	var writer io.Writer
 
@@ -102,11 +114,26 @@ func (g *OpenAPIGenerator) writeOutput(doc *high.Document) error {
 		writer = f
 	}
 
-	// Convert to JSON
-	encoder := json.NewEncoder(writer)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(doc); err != nil {
-		return fmt.Errorf("failed to encode OpenAPI document: %w", err)
+	// Render the document based on format
+	var data []byte
+	var err error
+
+	switch g.options.OutputFormat {
+	case FormatYAML:
+		data, err = doc.Render()
+	case FormatJSON:
+		data, err = doc.RenderJSON("  ")
+	default:
+		return fmt.Errorf("unsupported output format: %s", g.options.OutputFormat)
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to render OpenAPI document: %w", err)
+	}
+
+	// Write the rendered output
+	if _, err := writer.Write(data); err != nil {
+		return fmt.Errorf("failed to write output: %w", err)
 	}
 
 	return nil
