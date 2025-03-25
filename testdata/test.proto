@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package test.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/sapk/protoc-gen-openapiv3/testdata;testv1";
+
+// TestService demonstrates various OpenAPI v3 features
+service TestService {
+  // GetUser retrieves a user by ID
+  rpc GetUser(GetUserRequest) returns (User) {
+    option (google.api.http) = {
+      get: "/v1/users/{user_id}"
+    };
+  }
+
+  // CreateUser creates a new user
+  rpc CreateUser(CreateUserRequest) returns (User) {
+    option (google.api.http) = {
+      post: "/v1/users"
+      body: "user"
+    };
+  }
+
+  // ListUsers retrieves a list of users with pagination
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
+    option (google.api.http) = {
+      get: "/v1/users"
+    };
+  }
+
+  // UpdateUser updates an existing user
+  rpc UpdateUser(UpdateUserRequest) returns (User) {
+    option (google.api.http) = {
+      patch: "/v1/users/{user_id}"
+      body: "user"
+    };
+  }
+
+  // DeleteUser deletes a user
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/users/{user_id}"
+    };
+  }
+}
+
+// User represents a user in the system
+message User {
+  string user_id = 1;
+  string email = 2;
+  string name = 3;
+  UserType type = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+  map<string, string> metadata = 7;
+  repeated string tags = 8;
+}
+
+// UserType represents the type of user
+enum UserType {
+  USER_TYPE_UNSPECIFIED = 0;
+  USER_TYPE_ADMIN = 1;
+  USER_TYPE_USER = 2;
+  USER_TYPE_SERVICE = 3;
+}
+
+// GetUserRequest is used to retrieve a user by ID
+message GetUserRequest {
+  string user_id = 1;
+}
+
+// CreateUserRequest is used to create a new user
+message CreateUserRequest {
+  User user = 1;
+}
+
+// ListUsersRequest is used to list users with pagination
+message ListUsersRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+  string order_by = 4;
+}
+
+// ListUsersResponse contains the list of users and pagination information
+message ListUsersResponse {
+  repeated User users = 1;
+  string next_page_token = 2;
+  int32 total_size = 3;
+}
+
+// UpdateUserRequest is used to update an existing user
+message UpdateUserRequest {
+  string user_id = 1;
+  User user = 2;
+}
+
+// DeleteUserRequest is used to delete a user
+message DeleteUserRequest {
+  string user_id = 1;
+} 

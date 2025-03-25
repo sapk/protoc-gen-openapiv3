@@ -1,0 +1,27 @@
+# Go specific
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/vendor/
+
+# IDE specific
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Binary files
+/bin/
+/dist/
+
+# Generated files
+*.pb.go
+*.openapi.json 
