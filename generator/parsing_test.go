@@ -1,4 +1,4 @@
-package generator
+package generator_test
 
 import (
 	"os"
@@ -12,6 +12,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/pluginpb"
+
+	"github.com/sapk/protoc-gen-openapiv3/generator"
 )
 
 func TestParseProtoFile(t *testing.T) {
@@ -45,10 +47,10 @@ func TestParseProtoFile(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create a generator instance
-	generator := NewOpenAPIGenerator(gen, &Options{})
+	oapiGenerator := generator.NewOpenAPIGenerator(gen, &generator.Options{})
 
 	// Parse the proto file
-	parsed, err := generator.ParseProtoFile(gen.Files[0])
+	parsed, err := oapiGenerator.ParseProtoFile(gen.Files[0])
 	assert.NoError(t, err)
 	assert.NotNil(t, parsed)
 
