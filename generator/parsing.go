@@ -10,9 +10,9 @@ import (
 // ParsedFile represents the parsed proto file with all necessary information
 type ParsedFile struct {
 	Package     string
-	Services    []*ParsedService
-	Messages    []*ParsedMessage
-	Enums       []*ParsedEnum
+	Services    []ParsedService
+	Messages    []ParsedMessage
+	Enums       []ParsedEnum
 	Imports     []string
 	Annotations map[string]string
 }
@@ -20,7 +20,7 @@ type ParsedFile struct {
 // ParsedService represents a parsed service definition
 type ParsedService struct {
 	Name        string
-	Methods     []*ParsedMethod
+	Methods     []ParsedMethod
 	Annotations map[string]string
 }
 
@@ -35,7 +35,7 @@ type ParsedMethod struct {
 // ParsedMessage represents a parsed message definition
 type ParsedMessage struct {
 	Name        string
-	Fields      []*ParsedField
+	Fields      []ParsedField
 	Annotations map[string]string
 }
 
@@ -50,7 +50,7 @@ type ParsedField struct {
 // ParsedEnum represents a parsed enum definition
 type ParsedEnum struct {
 	Name        string
-	Values      []*ParsedEnumValue
+	Values      []ParsedEnumValue
 	Annotations map[string]string
 }
 
@@ -66,9 +66,9 @@ func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, err
 	parsed := &ParsedFile{
 		Package:     string(file.Desc.Package()),
 		Annotations: make(map[string]string),
-		Services:    make([]*ParsedService, 0),
-		Messages:    make([]*ParsedMessage, 0),
-		Enums:       make([]*ParsedEnum, 0),
+		Services:    make([]ParsedService, 0),
+		Messages:    make([]ParsedMessage, 0),
+		Enums:       make([]ParsedEnum, 0),
 		Imports:     make([]string, 0),
 	}
 
@@ -109,10 +109,10 @@ func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, err
 }
 
 // parseService parses a service definition
-func (g *OpenAPIGenerator) parseService(service *protogen.Service) (*ParsedService, error) {
-	parsed := &ParsedService{
+func (g *OpenAPIGenerator) parseService(service *protogen.Service) (ParsedService, error) {
+	parsed := ParsedService{
 		Name:        string(service.Desc.Name()),
-		Methods:     make([]*ParsedMethod, 0),
+		Methods:     make([]ParsedMethod, 0),
 		Annotations: make(map[string]string),
 	}
 
@@ -120,7 +120,7 @@ func (g *OpenAPIGenerator) parseService(service *protogen.Service) (*ParsedServi
 	for _, method := range service.Methods {
 		parsedMethod, err := g.parseMethod(method)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse method %s: %w", method.Desc.Name(), err)
+			return parsed, fmt.Errorf("failed to parse method %s: %w", method.Desc.Name(), err)
 		}
 		parsed.Methods = append(parsed.Methods, parsedMethod)
 	}
@@ -129,8 +129,8 @@ func (g *OpenAPIGenerator) parseService(service *protogen.Service) (*ParsedServi
 }
 
 // parseMethod parses a method definition
-func (g *OpenAPIGenerator) parseMethod(method *protogen.Method) (*ParsedMethod, error) {
-	parsed := &ParsedMethod{
+func (g *OpenAPIGenerator) parseMethod(method *protogen.Method) (ParsedMethod, error) {
+	parsed := ParsedMethod{
 		Name:        string(method.Desc.Name()),
 		InputType:   string(method.Input.Desc.FullName()),
 		OutputType:  string(method.Output.Desc.FullName()),
@@ -141,10 +141,10 @@ func (g *OpenAPIGenerator) parseMethod(method *protogen.Method) (*ParsedMethod, 
 }
 
 // parseMessage parses a message definition
-func (g *OpenAPIGenerator) parseMessage(message *protogen.Message) (*ParsedMessage, error) {
-	parsed := &ParsedMessage{
+func (g *OpenAPIGenerator) parseMessage(message *protogen.Message) (ParsedMessage, error) {
+	parsed := ParsedMessage{
 		Name:        string(message.Desc.Name()),
-		Fields:      make([]*ParsedField, 0),
+		Fields:      make([]ParsedField, 0),
 		Annotations: make(map[string]string),
 	}
 
@@ -152,7 +152,7 @@ func (g *OpenAPIGenerator) parseMessage(message *protogen.Message) (*ParsedMessa
 	for _, field := range message.Fields {
 		parsedField, err := g.parseField(field)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse field %s: %w", field.Desc.Name(), err)
+			return parsed, fmt.Errorf("failed to parse field %s: %w", field.Desc.Name(), err)
 		}
 		parsed.Fields = append(parsed.Fields, parsedField)
 	}
@@ -161,8 +161,8 @@ func (g *OpenAPIGenerator) parseMessage(message *protogen.Message) (*ParsedMessa
 }
 
 // parseField parses a field definition
-func (g *OpenAPIGenerator) parseField(field *protogen.Field) (*ParsedField, error) {
-	parsed := &ParsedField{
+func (g *OpenAPIGenerator) parseField(field *protogen.Field) (ParsedField, error) {
+	parsed := ParsedField{
 		Name:        string(field.Desc.Name()),
 		Type:        string(field.Desc.Kind().String()),
 		Number:      int32(field.Desc.Number()),
@@ -173,10 +173,10 @@ func (g *OpenAPIGenerator) parseField(field *protogen.Field) (*ParsedField, erro
 }
 
 // parseEnum parses an enum definition
-func (g *OpenAPIGenerator) parseEnum(enum *protogen.Enum) (*ParsedEnum, error) {
-	parsed := &ParsedEnum{
+func (g *OpenAPIGenerator) parseEnum(enum *protogen.Enum) (ParsedEnum, error) {
+	parsed := ParsedEnum{
 		Name:        string(enum.Desc.Name()),
-		Values:      make([]*ParsedEnumValue, 0),
+		Values:      make([]ParsedEnumValue, 0),
 		Annotations: make(map[string]string),
 	}
 
@@ -184,7 +184,7 @@ func (g *OpenAPIGenerator) parseEnum(enum *protogen.Enum) (*ParsedEnum, error) {
 	for _, value := range enum.Values {
 		parsedValue, err := g.parseEnumValue(value)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse enum value %s: %w", value.Desc.Name(), err)
+			return parsed, fmt.Errorf("failed to parse enum value %s: %w", value.Desc.Name(), err)
 		}
 		parsed.Values = append(parsed.Values, parsedValue)
 	}
@@ -193,8 +193,8 @@ func (g *OpenAPIGenerator) parseEnum(enum *protogen.Enum) (*ParsedEnum, error) {
 }
 
 // parseEnumValue parses an enum value
-func (g *OpenAPIGenerator) parseEnumValue(value *protogen.EnumValue) (*ParsedEnumValue, error) {
-	parsed := &ParsedEnumValue{
+func (g *OpenAPIGenerator) parseEnumValue(value *protogen.EnumValue) (ParsedEnumValue, error) {
+	parsed := ParsedEnumValue{
 		Name:        string(value.Desc.Name()),
 		Number:      int32(value.Desc.Number()),
 		Annotations: make(map[string]string),
