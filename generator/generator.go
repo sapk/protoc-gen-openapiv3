@@ -23,7 +23,6 @@ type Options struct {
 	AllowMerge           bool
 	IncludePackageInTags bool
 	FQNForOpenAPIName    bool
-	OpenAPIConfiguration string
 	OutputFile           string       // Path to output file, empty means stdout
 	OutputFormat         OutputFormat // Format of the output file (json or yaml)
 }

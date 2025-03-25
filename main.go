@@ -13,11 +13,12 @@ import (
 )
 
 var (
-	flags                flag.FlagSet
-	allowMerge           = flags.Bool("allow_merge", false, "if true, merge generation_opt into a single file")
-	includePkgInTags     = flags.Bool("include_package_in_tags", false, "if true, include the package name in the operation tags")
-	fqnForOpenAPIName    = flags.Bool("fqn_for_openapi_name", false, "if true, use the full qualified name for OpenAPI names")
-	openAPIConfiguration = flags.String("openapi_configuration", "", "path to OpenAPI configuration file")
+	flags             flag.FlagSet
+	allowMerge        = flags.Bool("allow_merge", false, "if true, merge generation_opt into a single file")
+	includePkgInTags  = flags.Bool("include_package_in_tags", false, "if true, include the package name in the operation tags")
+	fqnForOpenAPIName = flags.Bool("fqn_for_openapi_name", false, "if true, use the full qualified name for OpenAPI names")
+	outputFile        = flags.String("out", "openapi.yaml", "path to OpenAPI configuration file")
+	outputFormat      = flags.String("out-format", "yaml", "format of OpenAPI configuration file")
 )
 
 func main() {
@@ -48,7 +49,8 @@ func main() {
 			AllowMerge:           *allowMerge,
 			IncludePackageInTags: *includePkgInTags,
 			FQNForOpenAPIName:    *fqnForOpenAPIName,
-			OpenAPIConfiguration: *openAPIConfiguration,
+			OutputFile:           *outputFile,
+			OutputFormat:         generator.OutputFormat(*outputFormat),
 		})
 
 		// Process each proto file
