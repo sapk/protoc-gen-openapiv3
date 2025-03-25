@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/sapk/protoc-gen-openapiv3/generator"
+
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/types/pluginpb"
 )
@@ -38,7 +39,9 @@ func main() {
 		gen.SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
 
 		// Parse the command line flags
-		flags.Parse(os.Args[1:])
+		if err := flags.Parse(os.Args[1:]); err != nil {
+			return fmt.Errorf("failed to parse flags: %v", err)
+		}
 
 		// Create a new OpenAPI generator
 		generator := generator.NewOpenAPIGenerator(gen, &generator.Options{
