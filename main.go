@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -17,8 +18,8 @@ var (
 	allowMerge        = flags.Bool("allow_merge", false, "if true, merge generation_opt into a single file")
 	includePkgInTags  = flags.Bool("include_package_in_tags", false, "if true, include the package name in the operation tags")
 	fqnForOpenAPIName = flags.Bool("fqn_for_openapi_name", false, "if true, use the full qualified name for OpenAPI names")
-	outputFile        = flags.String("out", "openapi.yaml", "path to OpenAPI configuration file")
-	outputFormat      = flags.String("out-format", "yaml", "format of OpenAPI configuration file")
+	outputFile        = flags.String("output", "openapi.yaml", "path to OpenAPI configuration file")
+	outputFormat      = flags.String("output-format", "yaml", "format of OpenAPI configuration file")
 )
 
 func main() {
@@ -34,6 +35,9 @@ func main() {
 		os.Args = append([]string{os.Args[0]}, filteredArgs...)
 	}
 
+	// Debug log the arguments
+	log.Printf("Program arguments: %v", os.Args)
+
 	protogen.Options{
 		ParamFunc: flags.Set,
 	}.Run(func(gen *protogen.Plugin) error {
@@ -43,6 +47,9 @@ func main() {
 		if err := flags.Parse(os.Args[1:]); err != nil {
 			return fmt.Errorf("failed to parse flags: %v", err)
 		}
+
+		// Debug log the parsed flags
+		log.Printf("Parsed flags - output: %s, format: %s", *outputFile, *outputFormat)
 
 		// Create a new OpenAPI generator
 		generator := generator.NewOpenAPIGenerator(gen, &generator.Options{
