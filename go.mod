@@ -5,6 +5,7 @@ go 1.24.0
 require (
 	github.com/pb33f/libopenapi v0.21.8
 	github.com/stretchr/testify v1.10.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20250324211829-b45e905df463
 	google.golang.org/protobuf v1.36.6
 )
 
