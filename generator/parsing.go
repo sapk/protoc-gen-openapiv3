@@ -164,12 +164,36 @@ func (g *OpenAPIGenerator) parseMessage(message *protogen.Message) (ParsedMessag
 func (g *OpenAPIGenerator) parseField(field *protogen.Field) (ParsedField, error) {
 	parsed := ParsedField{
 		Name:        string(field.Desc.Name()),
-		Type:        string(field.Desc.Kind().String()),
 		Number:      int32(field.Desc.Number()),
 		Annotations: make(map[string]string),
 	}
 
+	// Handle field type
+	switch {
+	case field.Desc.IsMap():
+		keyType := field.Message.Fields[0].Desc.Kind().String()
+		valueType := field.Message.Fields[1].Desc.Kind().String()
+		parsed.Type = fmt.Sprintf("map<%s, %s>", keyType, valueType)
+	case field.Desc.IsList():
+		parsed.Type = fmt.Sprintf("repeated %s", getFieldType(field))
+	case field.Desc.HasOptionalKeyword():
+		parsed.Type = fmt.Sprintf("optional %s", getFieldType(field))
+	default:
+		parsed.Type = getFieldType(field)
+	}
+
 	return parsed, nil
+}
+
+// getFieldType returns the field type as a string
+func getFieldType(field *protogen.Field) string {
+	if field.Enum != nil {
+		return string(field.Enum.Desc.FullName())
+	}
+	if field.Message != nil {
+		return string(field.Message.Desc.FullName())
+	}
+	return field.Desc.Kind().String()
 }
 
 // parseEnum parses an enum definition
