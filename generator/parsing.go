@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"google.golang.org/genproto/googleapis/api/annotations"
 	"google.golang.org/protobuf/compiler/protogen"
+	"google.golang.org/protobuf/proto"
 )
 
 // ParsedFile represents the parsed proto file with all necessary information
@@ -29,6 +31,9 @@ type ParsedMethod struct {
 	Name        string
 	InputType   string
 	OutputType  string
+	HTTPMethod  string
+	HTTPPath    string
+	HTTPBody    string
 	Annotations map[string]string
 }
 
@@ -135,6 +140,36 @@ func (g *OpenAPIGenerator) parseMethod(method *protogen.Method) (ParsedMethod, e
 		InputType:   string(method.Input.Desc.FullName()),
 		OutputType:  string(method.Output.Desc.FullName()),
 		Annotations: make(map[string]string),
+	}
+
+	// Parse HTTP annotations
+	if method.Desc.Options() != nil {
+		httpRule := proto.GetExtension(method.Desc.Options(), annotations.E_Http).(*annotations.HttpRule)
+		if httpRule != nil {
+			// Parse HTTP method and path
+			switch {
+			case httpRule.GetGet() != "":
+				parsed.HTTPMethod = "GET"
+				parsed.HTTPPath = httpRule.GetGet()
+			case httpRule.GetPost() != "":
+				parsed.HTTPMethod = "POST"
+				parsed.HTTPPath = httpRule.GetPost()
+			case httpRule.GetPut() != "":
+				parsed.HTTPMethod = "PUT"
+				parsed.HTTPPath = httpRule.GetPut()
+			case httpRule.GetDelete() != "":
+				parsed.HTTPMethod = "DELETE"
+				parsed.HTTPPath = httpRule.GetDelete()
+			case httpRule.GetPatch() != "":
+				parsed.HTTPMethod = "PATCH"
+				parsed.HTTPPath = httpRule.GetPatch()
+			}
+
+			// Parse body field
+			if httpRule.Body != "" {
+				parsed.HTTPBody = httpRule.Body
+			}
+		}
 	}
 
 	return parsed, nil

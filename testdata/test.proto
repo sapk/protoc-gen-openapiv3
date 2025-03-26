@@ -41,6 +41,14 @@ service UserService {
     };
   }
 
+  // PatchUser partially updates an existing user
+  rpc PatchUser(PatchUserRequest) returns (User) {
+    option (google.api.http) = {
+      patch: "/v1/users/{user_id}"
+      body: "user"
+    };
+  }
+
   // DeleteUser deletes a user
   rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
@@ -115,4 +123,10 @@ message UpdateUserRequest {
 // DeleteUserRequest is used to delete a user
 message DeleteUserRequest {
   string user_id = 1;
+}
+
+// PatchUserRequest is used to partially update an existing user
+message PatchUserRequest {
+  string user_id = 1;
+  User user = 2;
 }

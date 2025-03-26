@@ -71,7 +71,7 @@ func TestParseProtoFile(t *testing.T) {
 	assert.Len(t, parsed.Services, 1)
 	service := parsed.Services[0]
 	assert.Equal(t, "UserService", service.Name)
-	assert.Len(t, service.Methods, 5)
+	assert.Len(t, service.Methods, 6)
 
 	// Verify methods
 	methods := make(map[string]generator.ParsedMethod)
@@ -83,26 +83,46 @@ func TestParseProtoFile(t *testing.T) {
 	getUser := methods["GetUser"]
 	assert.Equal(t, "test.package.GetUserRequest", getUser.InputType)
 	assert.Equal(t, "test.package.User", getUser.OutputType)
+	assert.Equal(t, "GET", getUser.HTTPMethod)
+	assert.Equal(t, "/v1/users/{user_id}", getUser.HTTPPath)
 
 	// Verify ListUsers method
 	listUsers := methods["ListUsers"]
 	assert.Equal(t, "test.package.ListUsersRequest", listUsers.InputType)
 	assert.Equal(t, "test.package.ListUsersResponse", listUsers.OutputType)
+	assert.Equal(t, "GET", listUsers.HTTPMethod)
+	assert.Equal(t, "/v1/users", listUsers.HTTPPath)
 
 	// Verify CreateUser method
 	createUser := methods["CreateUser"]
 	assert.Equal(t, "test.package.CreateUserRequest", createUser.InputType)
 	assert.Equal(t, "test.package.User", createUser.OutputType)
+	assert.Equal(t, "POST", createUser.HTTPMethod)
+	assert.Equal(t, "/v1/users", createUser.HTTPPath)
+	assert.Equal(t, "user", createUser.HTTPBody)
 
 	// Verify UpdateUser method
 	updateUser := methods["UpdateUser"]
 	assert.Equal(t, "test.package.UpdateUserRequest", updateUser.InputType)
 	assert.Equal(t, "test.package.User", updateUser.OutputType)
+	assert.Equal(t, "PUT", updateUser.HTTPMethod)
+	assert.Equal(t, "/v1/users/{user_id}", updateUser.HTTPPath)
+	assert.Equal(t, "user", updateUser.HTTPBody)
+
+	// Verify PatchUser method
+	patchUser := methods["PatchUser"]
+	assert.Equal(t, "test.package.PatchUserRequest", patchUser.InputType)
+	assert.Equal(t, "test.package.User", patchUser.OutputType)
+	assert.Equal(t, "PATCH", patchUser.HTTPMethod)
+	assert.Equal(t, "/v1/users/{user_id}", patchUser.HTTPPath)
+	assert.Equal(t, "user", patchUser.HTTPBody)
 
 	// Verify DeleteUser method
 	deleteUser := methods["DeleteUser"]
 	assert.Equal(t, "test.package.DeleteUserRequest", deleteUser.InputType)
 	assert.Equal(t, "google.protobuf.Empty", deleteUser.OutputType)
+	assert.Equal(t, "DELETE", deleteUser.HTTPMethod)
+	assert.Equal(t, "/v1/users/{user_id}", deleteUser.HTTPPath)
 
 	// Verify messages
 	messages := make(map[string]generator.ParsedMessage)
