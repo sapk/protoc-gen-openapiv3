@@ -38,11 +38,21 @@ func TestParseProtoFile(t *testing.T) {
 	fdSet := &descriptorpb.FileDescriptorSet{}
 	err = proto.Unmarshal(data, fdSet)
 	require.NoError(t, err)
-	require.Len(t, fdSet.File, 1)
 
-	// Create a test plugin
+	// Find the main proto file and keep track of its index
+	var mainFileIndex int
+	for i, file := range fdSet.File {
+		if file.GetName() == "test.proto" {
+			mainFileIndex = i
+			break
+		}
+	}
+	require.NotEqual(t, -1, mainFileIndex, "Main proto file not found")
+
+	// Create a test plugin with all files but only process the main one
 	gen, err := protogen.Options{}.New(&pluginpb.CodeGeneratorRequest{
-		ProtoFile: fdSet.File,
+		ProtoFile:      fdSet.File,
+		FileToGenerate: []string{"test.proto"},
 	})
 	require.NoError(t, err)
 
@@ -50,7 +60,7 @@ func TestParseProtoFile(t *testing.T) {
 	oapiGenerator := generator.NewOpenAPIGenerator(gen, &generator.Options{})
 
 	// Parse the proto file
-	parsed, err := oapiGenerator.ParseProtoFile(gen.Files[0])
+	parsed, err := oapiGenerator.ParseProtoFile(gen.Files[mainFileIndex])
 	assert.NoError(t, err)
 	assert.NotNil(t, parsed)
 
@@ -60,27 +70,93 @@ func TestParseProtoFile(t *testing.T) {
 	// Verify service
 	assert.Len(t, parsed.Services, 1)
 	service := parsed.Services[0]
-	assert.Equal(t, "TestService", service.Name)
-	assert.Len(t, service.Methods, 1)
+	assert.Equal(t, "UserService", service.Name)
+	assert.Len(t, service.Methods, 5)
 
-	// Verify method
-	method := service.Methods[0]
-	assert.Equal(t, "TestMethod", method.Name)
-	assert.Equal(t, "test.package.TestRequest", method.InputType)
-	assert.Equal(t, "test.package.TestResponse", method.OutputType)
+	// Verify methods
+	methods := make(map[string]generator.ParsedMethod)
+	for _, method := range service.Methods {
+		methods[method.Name] = method
+	}
+
+	// Verify GetUser method
+	getUser := methods["GetUser"]
+	assert.Equal(t, "test.package.GetUserRequest", getUser.InputType)
+	assert.Equal(t, "test.package.User", getUser.OutputType)
+
+	// Verify ListUsers method
+	listUsers := methods["ListUsers"]
+	assert.Equal(t, "test.package.ListUsersRequest", listUsers.InputType)
+	assert.Equal(t, "test.package.ListUsersResponse", listUsers.OutputType)
+
+	// Verify CreateUser method
+	createUser := methods["CreateUser"]
+	assert.Equal(t, "test.package.CreateUserRequest", createUser.InputType)
+	assert.Equal(t, "test.package.User", createUser.OutputType)
+
+	// Verify UpdateUser method
+	updateUser := methods["UpdateUser"]
+	assert.Equal(t, "test.package.UpdateUserRequest", updateUser.InputType)
+	assert.Equal(t, "test.package.User", updateUser.OutputType)
+
+	// Verify DeleteUser method
+	deleteUser := methods["DeleteUser"]
+	assert.Equal(t, "test.package.DeleteUserRequest", deleteUser.InputType)
+	assert.Equal(t, "google.protobuf.Empty", deleteUser.OutputType)
 
 	// Verify messages
-	assert.Len(t, parsed.Messages, 2)
-	request := parsed.Messages[0]
-	assert.Equal(t, "TestRequest", request.Name)
-	assert.Len(t, request.Fields, 1)
-	response := parsed.Messages[1]
-	assert.Equal(t, "TestResponse", response.Name)
-	assert.Len(t, response.Fields, 1)
+	messages := make(map[string]generator.ParsedMessage)
+	for _, msg := range parsed.Messages {
+		messages[msg.Name] = msg
+	}
 
-	// Verify fields
-	field := request.Fields[0]
-	assert.Equal(t, "test_field", field.Name)
-	assert.Equal(t, "string", field.Type)
-	assert.Equal(t, int32(1), field.Number)
+	// Verify User message
+	user := messages["User"]
+	assert.Len(t, user.Fields, 9)
+	userFields := make(map[string]generator.ParsedField)
+	for _, field := range user.Fields {
+		userFields[field.Name] = field
+	}
+
+	assert.Equal(t, "string", userFields["user_id"].Type)
+	assert.Equal(t, "string", userFields["email"].Type)
+	assert.Equal(t, "string", userFields["full_name"].Type)
+	assert.Equal(t, "test.package.UserStatus", userFields["status"].Type)
+	assert.Equal(t, "repeated string", userFields["roles"].Type)
+	assert.Equal(t, "optional test.package.Address", userFields["address"].Type)
+	assert.Equal(t, "map<string, string>", userFields["metadata"].Type)
+	assert.Equal(t, "google.protobuf.Timestamp", userFields["created_at"].Type)
+	assert.Equal(t, "google.protobuf.Timestamp", userFields["updated_at"].Type)
+
+	// Verify Address message
+	address := messages["Address"]
+	assert.Len(t, address.Fields, 5)
+	addressFields := make(map[string]generator.ParsedField)
+	for _, field := range address.Fields {
+		addressFields[field.Name] = field
+	}
+
+	assert.Equal(t, "string", addressFields["street"].Type)
+	assert.Equal(t, "string", addressFields["city"].Type)
+	assert.Equal(t, "string", addressFields["state"].Type)
+	assert.Equal(t, "string", addressFields["country"].Type)
+	assert.Equal(t, "string", addressFields["postal_code"].Type)
+
+	// Verify enums
+	assert.Len(t, parsed.Enums, 1)
+	userStatus := parsed.Enums[0]
+	assert.Equal(t, "UserStatus", userStatus.Name)
+	assert.Len(t, userStatus.Values, 5)
+
+	// Verify enum values
+	enumValues := make(map[string]generator.ParsedEnumValue)
+	for _, value := range userStatus.Values {
+		enumValues[value.Name] = value
+	}
+
+	assert.Equal(t, int32(0), enumValues["USER_STATUS_UNSPECIFIED"].Number)
+	assert.Equal(t, int32(1), enumValues["USER_STATUS_ACTIVE"].Number)
+	assert.Equal(t, int32(2), enumValues["USER_STATUS_INACTIVE"].Number)
+	assert.Equal(t, int32(3), enumValues["USER_STATUS_SUSPENDED"].Number)
+	assert.Equal(t, int32(4), enumValues["USER_STATUS_DELETED"].Number)
 }
