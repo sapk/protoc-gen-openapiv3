@@ -17,31 +17,119 @@ func TestConvertToOpenAPI(t *testing.T) {
 				Name: "TestService",
 				Methods: []generator.ParsedMethod{
 					{
-						Name:       "TestMethod",
-						InputType:  "TestRequest",
-						OutputType: "TestResponse",
+						Name:       "GetUser",
+						InputType:  "GetUserRequest",
+						OutputType: "User",
+						HTTPMethod: "GET",
+						HTTPPath:   "/v1/users/{user_id}",
+					},
+					{
+						Name:       "CreateUser",
+						InputType:  "CreateUserRequest",
+						OutputType: "User",
+						HTTPMethod: "POST",
+						HTTPPath:   "/v1/users",
+						HTTPBody:   "user",
+					},
+					{
+						Name:       "UpdateUser",
+						InputType:  "UpdateUserRequest",
+						OutputType: "User",
+						HTTPMethod: "PUT",
+						HTTPPath:   "/v1/users/{user_id}",
+						HTTPBody:   "user",
+					},
+					{
+						Name:       "PatchUser",
+						InputType:  "PatchUserRequest",
+						OutputType: "User",
+						HTTPMethod: "PATCH",
+						HTTPPath:   "/v1/users/{user_id}",
+						HTTPBody:   "user",
+					},
+					{
+						Name:       "DeleteUser",
+						InputType:  "DeleteUserRequest",
+						OutputType: "google.protobuf.Empty",
+						HTTPMethod: "DELETE",
+						HTTPPath:   "/v1/users/{user_id}",
 					},
 				},
 			},
 		},
 		Messages: []generator.ParsedMessage{
 			{
-				Name: "TestRequest",
+				Name: "GetUserRequest",
 				Fields: []generator.ParsedField{
 					{
-						Name:   "test_field",
+						Name:   "user_id",
 						Type:   "string",
 						Number: 1,
 					},
 				},
 			},
 			{
-				Name: "TestResponse",
+				Name: "CreateUserRequest",
 				Fields: []generator.ParsedField{
 					{
-						Name:   "result",
+						Name:   "user",
+						Type:   "User",
+						Number: 1,
+					},
+				},
+			},
+			{
+				Name: "UpdateUserRequest",
+				Fields: []generator.ParsedField{
+					{
+						Name:   "user_id",
 						Type:   "string",
 						Number: 1,
+					},
+					{
+						Name:   "user",
+						Type:   "User",
+						Number: 2,
+					},
+				},
+			},
+			{
+				Name: "PatchUserRequest",
+				Fields: []generator.ParsedField{
+					{
+						Name:   "user_id",
+						Type:   "string",
+						Number: 1,
+					},
+					{
+						Name:   "user",
+						Type:   "User",
+						Number: 2,
+					},
+				},
+			},
+			{
+				Name: "DeleteUserRequest",
+				Fields: []generator.ParsedField{
+					{
+						Name:   "user_id",
+						Type:   "string",
+						Number: 1,
+					},
+				},
+			},
+			{
+				Name: "User",
+				Fields: []generator.ParsedField{
+					{
+						Name:   "user_id",
+						Type:   "string",
+						Number: 1,
+					},
+					{
+						Name:   "email",
+						Type:   "string",
+						Number: 2,
 					},
 				},
 			},
@@ -61,45 +149,61 @@ func TestConvertToOpenAPI(t *testing.T) {
 	assert.Equal(t, "1.0.0", doc.Info.Version)
 
 	// Test paths
-	assert.Equal(t, 1, doc.Paths.PathItems.Len())
-	pathItem, ok := doc.Paths.PathItems.Get("/test-method")
+	assert.Equal(t, 2, doc.Paths.PathItems.Len())
+
+	// Test /v1/users/{user_id} path
+	pathItem, ok := doc.Paths.PathItems.Get("/v1/users/{user_id}")
 	assert.True(t, ok)
 	assert.NotNil(t, pathItem)
 
-	// Test operation
-	assert.NotNil(t, pathItem.Post)
-	assert.Equal(t, "TestMethod", pathItem.Post.OperationId)
-	assert.Equal(t, "TestMethod operation", pathItem.Post.Summary)
+	// Test GET operation
+	assert.NotNil(t, pathItem.Get)
+	assert.Equal(t, "GetUser", pathItem.Get.OperationId)
+	assert.Equal(t, "GetUser operation", pathItem.Get.Summary)
+	assert.Nil(t, pathItem.Get.RequestBody)
 
-	// Test request body
-	requestBody := pathItem.Post.RequestBody
-	assert.NotNil(t, requestBody)
-	content, ok := requestBody.Content.Get("application/json")
-	assert.True(t, ok)
-	assert.NotNil(t, content.Schema)
-
-	// Test response
-	responses := pathItem.Post.Responses
-	assert.NotNil(t, responses)
-	response, ok := responses.Codes.Get("200")
+	// Test response content for GET operation
+	response, ok := pathItem.Get.Responses.Codes.Get("200")
 	assert.True(t, ok)
 	assert.NotNil(t, response)
 	responseContent, ok := response.Content.Get("application/json")
 	assert.True(t, ok)
 	assert.NotNil(t, responseContent.Schema)
 
+	// Test PUT operation
+	assert.NotNil(t, pathItem.Put)
+	assert.Equal(t, "UpdateUser", pathItem.Put.OperationId)
+	assert.Equal(t, "UpdateUser operation", pathItem.Put.Summary)
+	assert.NotNil(t, pathItem.Put.RequestBody)
+
+	// Test PATCH operation
+	assert.NotNil(t, pathItem.Patch)
+	assert.Equal(t, "PatchUser", pathItem.Patch.OperationId)
+	assert.Equal(t, "PatchUser operation", pathItem.Patch.Summary)
+	assert.NotNil(t, pathItem.Patch.RequestBody)
+
+	// Test DELETE operation
+	assert.NotNil(t, pathItem.Delete)
+	assert.Equal(t, "DeleteUser", pathItem.Delete.OperationId)
+	assert.Equal(t, "DeleteUser operation", pathItem.Delete.Summary)
+	assert.Nil(t, pathItem.Delete.RequestBody)
+
+	// Test /v1/users path
+	pathItem, ok = doc.Paths.PathItems.Get("/v1/users")
+	assert.True(t, ok)
+	assert.NotNil(t, pathItem)
+
+	// Test POST operation
+	assert.NotNil(t, pathItem.Post)
+	assert.Equal(t, "CreateUser", pathItem.Post.OperationId)
+	assert.Equal(t, "CreateUser operation", pathItem.Post.Summary)
+	assert.NotNil(t, pathItem.Post.RequestBody)
+	content, ok := pathItem.Post.RequestBody.Content.Get("application/json")
+	assert.True(t, ok)
+	assert.NotNil(t, content.Schema)
+
 	// Test schemas
-	assert.Equal(t, 2, doc.Components.Schemas.Len())
-
-	// Test request schema
-	requestSchema, ok := doc.Components.Schemas.Get("TestRequest")
-	assert.True(t, ok)
-	assert.NotNil(t, requestSchema)
-
-	// Test response schema
-	responseSchema, ok := doc.Components.Schemas.Get("TestResponse")
-	assert.True(t, ok)
-	assert.NotNil(t, responseSchema)
+	assert.Equal(t, 6, doc.Components.Schemas.Len())
 }
 
 func TestConvertToOpenAPI_NilFile(t *testing.T) {

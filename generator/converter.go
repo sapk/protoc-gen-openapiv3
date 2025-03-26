@@ -33,24 +33,52 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 	// Convert services to paths
 	for _, service := range parsedFile.Services {
 		for _, method := range service.Methods {
-			path := convertMethodToPath(method)
-			pathItem := &high.PathItem{
-				Post: &high.Operation{
-					OperationId: method.Name,
-					Summary:     fmt.Sprintf("%s operation", method.Name),
-					RequestBody: &high.RequestBody{
-						Content: orderedmap.New[string, *high.MediaType](),
-					},
-					Responses: &high.Responses{
-						Codes: orderedmap.New[string, *high.Response](),
-					},
+			path := method.HTTPPath
+			if path == "" {
+				path = convertMethodToPath(method)
+			}
+
+			// Get or create path item
+			pathItem, exists := doc.Paths.PathItems.Get(path)
+			if !exists {
+				pathItem = &high.PathItem{}
+			}
+
+			// Create operation based on HTTP method
+			operation := &high.Operation{
+				OperationId: method.Name,
+				Summary:     fmt.Sprintf("%s operation", method.Name),
+				Responses: &high.Responses{
+					Codes: orderedmap.New[string, *high.Response](),
 				},
 			}
 
-			// Add request body content
-			pathItem.Post.RequestBody.Content.Set("application/json", &high.MediaType{
-				Schema: convertMessageToSchema(parsedFile, method.InputType),
-			})
+			// Set operation based on HTTP method
+			switch method.HTTPMethod {
+			case "GET":
+				pathItem.Get = operation
+			case "POST":
+				pathItem.Post = operation
+			case "PUT":
+				pathItem.Put = operation
+			case "PATCH":
+				pathItem.Patch = operation
+			case "DELETE":
+				pathItem.Delete = operation
+			default:
+				// Default to POST if no HTTP method is specified
+				pathItem.Post = operation
+			}
+
+			// Add request body if specified
+			if method.HTTPBody != "" {
+				operation.RequestBody = &high.RequestBody{
+					Content: orderedmap.New[string, *high.MediaType](),
+				}
+				operation.RequestBody.Content.Set("application/json", &high.MediaType{
+					Schema: convertMessageToSchema(parsedFile, method.InputType),
+				})
+			}
 
 			// Add response content
 			response := &high.Response{
@@ -59,9 +87,9 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 			response.Content.Set("application/json", &high.MediaType{
 				Schema: convertMessageToSchema(parsedFile, method.OutputType),
 			})
-			pathItem.Post.Responses.Codes.Set("200", response)
+			operation.Responses.Codes.Set("200", response)
 
-			// Add path item
+			// Update path item
 			doc.Paths.PathItems.Set(path, pathItem)
 		}
 	}
@@ -75,7 +103,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 	return doc, nil
 }
 
-// convertMethodToPath converts a method name to a path
+// convertMethodToPath converts a method name to a path (fallback when no HTTP path is specified)
 func convertMethodToPath(method ParsedMethod) string {
 	// Convert camelCase to kebab-case
 	path := method.Name
