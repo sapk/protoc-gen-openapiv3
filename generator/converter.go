@@ -281,7 +281,6 @@ func handleMessage(parsedFile *ParsedFile, name string, doc *high.Document) *bas
 
 	// Create the schema proxy and store it in components
 	schemaProxy := base.CreateSchemaProxy(schema)
-	doc.Components.Schemas.Set(name, schemaProxy)
 	return schemaProxy
 }
 
@@ -320,7 +319,6 @@ func handleEnum(parsedFile *ParsedFile, name string, doc *high.Document) *base.S
 	}
 
 	schemaProxy := base.CreateSchemaProxy(schema)
-	doc.Components.Schemas.Set(name, schemaProxy)
 	return schemaProxy
 }
 
