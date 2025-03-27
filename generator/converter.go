@@ -164,12 +164,72 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile) *base.Sche
 	// Handle special types
 	if strings.HasPrefix(field.Type, "repeated ") {
 		itemType := strings.TrimPrefix(field.Type, "repeated ")
-		return base.CreateSchemaProxy(&base.Schema{
-			Type: []string{"array"},
-			Items: &base.DynamicValue[*base.SchemaProxy, bool]{
-				A: convertMessageToSchema(parsedFile, itemType),
-			},
-		})
+		// For primitive types, create the schema directly
+		switch itemType {
+		case "string":
+			return base.CreateSchemaProxy(&base.Schema{
+				Type: []string{"array"},
+				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
+					A: base.CreateSchemaProxy(&base.Schema{
+						Type: []string{"string"},
+					}),
+				},
+			})
+		case "int32", "int64", "uint32", "uint64":
+			return base.CreateSchemaProxy(&base.Schema{
+				Type: []string{"array"},
+				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
+					A: base.CreateSchemaProxy(&base.Schema{
+						Type: []string{"integer"},
+					}),
+				},
+			})
+		case "float", "double":
+			return base.CreateSchemaProxy(&base.Schema{
+				Type: []string{"array"},
+				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
+					A: base.CreateSchemaProxy(&base.Schema{
+						Type: []string{"number"},
+					}),
+				},
+			})
+		case "bool":
+			return base.CreateSchemaProxy(&base.Schema{
+				Type: []string{"array"},
+				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
+					A: base.CreateSchemaProxy(&base.Schema{
+						Type: []string{"boolean"},
+					}),
+				},
+			})
+		case "bytes":
+			return base.CreateSchemaProxy(&base.Schema{
+				Type: []string{"array"},
+				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
+					A: base.CreateSchemaProxy(&base.Schema{
+						Type: []string{"string"},
+					}),
+				},
+			})
+		case "google.protobuf.Timestamp":
+			return base.CreateSchemaProxy(&base.Schema{
+				Type: []string{"array"},
+				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
+					A: base.CreateSchemaProxy(&base.Schema{
+						Type:   []string{"string"},
+						Format: "date-time",
+					}),
+				},
+			})
+		default:
+			// For message types, create a reference
+			return base.CreateSchemaProxy(&base.Schema{
+				Type: []string{"array"},
+				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
+					A: convertMessageToSchema(parsedFile, itemType),
+				},
+			})
+		}
 	}
 
 	if strings.HasPrefix(field.Type, "optional ") {
