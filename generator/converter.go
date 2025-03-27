@@ -248,10 +248,44 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile) *base.Sche
 			})
 		}
 		valueType := parts[1]
+
+		// Handle primitive value types directly
+		var valueSchema *base.SchemaProxy
+		switch valueType {
+		case "string":
+			valueSchema = base.CreateSchemaProxy(&base.Schema{
+				Type: []string{"string"},
+			})
+		case "int32", "int64", "uint32", "uint64":
+			valueSchema = base.CreateSchemaProxy(&base.Schema{
+				Type: []string{"integer"},
+			})
+		case "float", "double":
+			valueSchema = base.CreateSchemaProxy(&base.Schema{
+				Type: []string{"number"},
+			})
+		case "bool":
+			valueSchema = base.CreateSchemaProxy(&base.Schema{
+				Type: []string{"boolean"},
+			})
+		case "bytes":
+			valueSchema = base.CreateSchemaProxy(&base.Schema{
+				Type: []string{"string"},
+			})
+		case "google.protobuf.Timestamp":
+			valueSchema = base.CreateSchemaProxy(&base.Schema{
+				Type:   []string{"string"},
+				Format: "date-time",
+			})
+		default:
+			// For message types, create a reference
+			valueSchema = convertMessageToSchema(parsedFile, valueType)
+		}
+
 		return base.CreateSchemaProxy(&base.Schema{
 			Type: []string{"object"},
 			AdditionalProperties: &base.DynamicValue[*base.SchemaProxy, bool]{
-				A: convertMessageToSchema(parsedFile, valueType),
+				A: valueSchema,
 			},
 		})
 	}
