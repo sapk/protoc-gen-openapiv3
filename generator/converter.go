@@ -229,86 +229,117 @@ func convertMessageToSchema(parsedFile *ParsedFile, messageName string, doc *hig
 			processingSchemas[name] = false
 		}()
 
-		// Find the message in the parsed file
-		var message *ParsedMessage
-		if parsedFile != nil {
-			for i := range parsedFile.Messages {
-				if parsedFile.Messages[i].Name == name {
-					message = &parsedFile.Messages[i]
-					break
-				}
-			}
+		// Try to convert the schema using different handlers
+		if schema := handleMessage(parsedFile, name, doc); schema != nil {
+			return schema
 		}
 
-		if message == nil {
-			// If message not found, check if it's an enum
-			var enum *ParsedEnum
-			if parsedFile != nil {
-				for i := range parsedFile.Enums {
-					if parsedFile.Enums[i].Name == name {
-						enum = &parsedFile.Enums[i]
-						break
-					}
-				}
-			}
-
-			if enum != nil {
-				// Create enum schema
-				schema := &base.Schema{
-					Type: []string{"string"},
-					Enum: make([]*yaml.Node, len(enum.Values)),
-				}
-				for i, value := range enum.Values {
-					schema.Enum[i] = &yaml.Node{
-						Kind:  yaml.ScalarNode,
-						Value: value.Name,
-					}
-				}
-				schemaProxy := base.CreateSchemaProxy(schema)
-				doc.Components.Schemas.Set(name, schemaProxy)
-				return schemaProxy
-			}
-
-			// If not an enum, create a reference to the schema
-			// Strip package name from the reference
-			refName := name
-			if strings.Contains(name, ".") {
-				parts := strings.Split(name, ".")
-				refName = parts[len(parts)-1]
-			}
-
-			// Check if the schema already exists in components
-			if _, exists := doc.Components.Schemas.Get(refName); !exists {
-				schema := convert(refName)
-				doc.Components.Schemas.Set(refName, schema)
-			}
-
-			return base.CreateSchemaProxyRef(fmt.Sprintf("#/components/schemas/%s", refName))
+		if schema := handleEnum(parsedFile, name, doc); schema != nil {
+			return schema
 		}
 
-		// Create the schema
-		schema := &base.Schema{
-			Type:       []string{"object"},
-			Properties: orderedmap.New[string, *base.SchemaProxy](),
-			Required:   make([]string, 0),
-		}
-
-		// Convert fields to properties
-		for _, field := range message.Fields {
-			property := convertFieldToSchema(&field, parsedFile, doc)
-			schema.Properties.Set(field.Name, property)
-			if !strings.HasPrefix(field.Type, "optional") {
-				schema.Required = append(schema.Required, field.Name)
-			}
-		}
-
-		// Create the schema proxy and store it in components
-		schemaProxy := base.CreateSchemaProxy(schema)
-		doc.Components.Schemas.Set(name, schemaProxy)
-		return schemaProxy
+		// Handle as reference
+		return handleReference(name, doc, convert)
 	}
 
 	return convert(messageName)
+}
+
+// handleMessage handles conversion of a message type to a schema
+func handleMessage(parsedFile *ParsedFile, name string, doc *high.Document) *base.SchemaProxy {
+	if parsedFile == nil {
+		return nil
+	}
+
+	var message *ParsedMessage
+	for i := range parsedFile.Messages {
+		if parsedFile.Messages[i].Name == name {
+			message = &parsedFile.Messages[i]
+			break
+		}
+	}
+
+	if message == nil {
+		return nil
+	}
+
+	// Create the schema
+	schema := &base.Schema{
+		Type:       []string{"object"},
+		Properties: orderedmap.New[string, *base.SchemaProxy](),
+		Required:   make([]string, 0),
+	}
+
+	// Convert fields to properties
+	for _, field := range message.Fields {
+		property := convertFieldToSchema(&field, parsedFile, doc)
+		schema.Properties.Set(field.Name, property)
+		if !strings.HasPrefix(field.Type, "optional") {
+			schema.Required = append(schema.Required, field.Name)
+		}
+	}
+
+	// Create the schema proxy and store it in components
+	schemaProxy := base.CreateSchemaProxy(schema)
+	doc.Components.Schemas.Set(name, schemaProxy)
+	return schemaProxy
+}
+
+// handleEnum handles conversion of an enum type to a schema
+func handleEnum(parsedFile *ParsedFile, name string, doc *high.Document) *base.SchemaProxy {
+	if parsedFile == nil {
+		return nil
+	}
+
+	var enum *ParsedEnum
+	for i := range parsedFile.Enums {
+		if parsedFile.Enums[i].Name == name {
+			enum = &parsedFile.Enums[i]
+			break
+		}
+	}
+
+	if enum == nil {
+		return nil
+	}
+
+	// Create enum schema
+	schema := &base.Schema{
+		Type: []string{"string"},
+		Enum: make([]*yaml.Node, len(enum.Values)),
+	}
+	for i, value := range enum.Values {
+		schema.Enum[i] = &yaml.Node{
+			Kind:  yaml.ScalarNode,
+			Value: value.Name,
+		}
+	}
+
+	if len(schema.Enum) > 0 {
+		schema.Default = schema.Enum[0]
+	}
+
+	schemaProxy := base.CreateSchemaProxy(schema)
+	doc.Components.Schemas.Set(name, schemaProxy)
+	return schemaProxy
+}
+
+// handleReference handles conversion of a reference type to a schema
+func handleReference(name string, doc *high.Document, convert func(string) *base.SchemaProxy) *base.SchemaProxy {
+	// Strip package name from the reference
+	refName := name
+	if strings.Contains(name, ".") {
+		parts := strings.Split(name, ".")
+		refName = parts[len(parts)-1]
+	}
+
+	// Check if the schema already exists in components
+	if _, exists := doc.Components.Schemas.Get(refName); !exists {
+		schema := convert(refName)
+		doc.Components.Schemas.Set(refName, schema)
+	}
+
+	return base.CreateSchemaProxyRef(fmt.Sprintf("#/components/schemas/%s", refName))
 }
 
 // createPrimitiveSchema creates a schema for a primitive type
