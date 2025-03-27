@@ -114,7 +114,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 							param.Explode = &explode
 						}
 					} else {
-						param.Schema = convertFieldToSchema(&field, parsedFile)
+						param.Schema = convertFieldToSchema(&field, parsedFile, doc)
 					}
 
 					operation.Parameters = append(operation.Parameters, param)
@@ -144,7 +144,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 					Content: orderedmap.New[string, *high.MediaType](),
 				}
 				operation.RequestBody.Content.Set("application/json", &high.MediaType{
-					Schema: convertMessageToSchema(parsedFile, method.InputType),
+					Schema: convertMessageToSchema(parsedFile, method.InputType, doc),
 				})
 			}
 
@@ -154,19 +154,13 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 				Content:     orderedmap.New[string, *high.MediaType](),
 			}
 			response.Content.Set("application/json", &high.MediaType{
-				Schema: convertMessageToSchema(parsedFile, method.OutputType),
+				Schema: convertMessageToSchema(parsedFile, method.OutputType, doc),
 			})
 			operation.Responses.Codes.Set("200", response)
 
 			// Update path item
 			doc.Paths.PathItems.Set(path, pathItem)
 		}
-	}
-
-	// Convert messages to schemas
-	for _, message := range parsedFile.Messages {
-		schema := convertMessageToSchema(parsedFile, message.Name)
-		doc.Components.Schemas.Set(message.Name, schema)
 	}
 
 	return doc, nil
@@ -205,46 +199,82 @@ func extractPathParameters(path string) []string {
 }
 
 // convertMessageToSchema converts a message to a schema
-func convertMessageToSchema(parsedFile *ParsedFile, messageName string) *base.SchemaProxy {
-	// Find the message in the parsed file
-	var message *ParsedMessage
-	if parsedFile != nil {
-		for i := range parsedFile.Messages {
-			if parsedFile.Messages[i].Name == messageName {
-				message = &parsedFile.Messages[i]
-				break
+func convertMessageToSchema(parsedFile *ParsedFile, messageName string, doc *high.Document) *base.SchemaProxy {
+	// Create a map to track schemas being processed
+	processingSchemas := make(map[string]bool)
+
+	// Inner function to handle the actual conversion
+	var convert func(string) *base.SchemaProxy
+	convert = func(name string) *base.SchemaProxy {
+		// Check if we're already processing this schema
+		if processingSchemas[name] {
+			// If we are, create a reference to avoid infinite recursion
+			refName := name
+			if strings.Contains(name, ".") {
+				parts := strings.Split(name, ".")
+				refName = parts[len(parts)-1]
+			}
+			return base.CreateSchemaProxyRef(fmt.Sprintf("#/components/schemas/%s", refName))
+		}
+
+		// Mark this schema as being processed
+		processingSchemas[name] = true
+		defer func() {
+			processingSchemas[name] = false
+		}()
+
+		// Find the message in the parsed file
+		var message *ParsedMessage
+		if parsedFile != nil {
+			for i := range parsedFile.Messages {
+				if parsedFile.Messages[i].Name == name {
+					message = &parsedFile.Messages[i]
+					break
+				}
 			}
 		}
-	}
 
-	if message == nil {
-		// If message not found, create a reference to the schema
-		// Strip package name from the reference
-		refName := messageName
-		if strings.Contains(messageName, ".") {
-			parts := strings.Split(messageName, ".")
-			refName = parts[len(parts)-1]
+		if message == nil {
+			// If message not found, create a reference to the schema
+			// Strip package name from the reference
+			refName := name
+			if strings.Contains(name, ".") {
+				parts := strings.Split(name, ".")
+				refName = parts[len(parts)-1]
+			}
+
+			// Check if the schema already exists in components
+			if _, exists := doc.Components.Schemas.Get(refName); !exists {
+				schema := convert(refName)
+				doc.Components.Schemas.Set(refName, schema)
+			}
+
+			return base.CreateSchemaProxyRef(fmt.Sprintf("#/components/schemas/%s", refName))
 		}
-		return base.CreateSchemaProxyRef(fmt.Sprintf("#/components/schemas/%s", refName))
-	}
 
-	// Create the schema
-	schema := &base.Schema{
-		Type:       []string{"object"},
-		Properties: orderedmap.New[string, *base.SchemaProxy](),
-		Required:   make([]string, 0),
-	}
-
-	// Convert fields to properties
-	for _, field := range message.Fields {
-		property := convertFieldToSchema(&field, parsedFile)
-		schema.Properties.Set(field.Name, property)
-		if !strings.HasPrefix(field.Type, "optional") {
-			schema.Required = append(schema.Required, field.Name)
+		// Create the schema
+		schema := &base.Schema{
+			Type:       []string{"object"},
+			Properties: orderedmap.New[string, *base.SchemaProxy](),
+			Required:   make([]string, 0),
 		}
+
+		// Convert fields to properties
+		for _, field := range message.Fields {
+			property := convertFieldToSchema(&field, parsedFile, doc)
+			schema.Properties.Set(field.Name, property)
+			if !strings.HasPrefix(field.Type, "optional") {
+				schema.Required = append(schema.Required, field.Name)
+			}
+		}
+
+		// Create the schema proxy and store it in components
+		schemaProxy := base.CreateSchemaProxy(schema)
+		doc.Components.Schemas.Set(name, schemaProxy)
+		return schemaProxy
 	}
 
-	return base.CreateSchemaProxy(schema)
+	return convert(messageName)
 }
 
 // createPrimitiveSchema creates a schema for a primitive type
@@ -281,7 +311,7 @@ func createPrimitiveSchema(primitiveType string) *base.SchemaProxy {
 }
 
 // convertFieldToSchema converts a field to a schema
-func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile) *base.SchemaProxy {
+func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile, doc *high.Document) *base.SchemaProxy {
 	// Handle special types
 	if strings.HasPrefix(field.Type, "repeated ") {
 		itemType := strings.TrimPrefix(field.Type, "repeated ")
@@ -298,14 +328,14 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile) *base.Sche
 		return base.CreateSchemaProxy(&base.Schema{
 			Type: []string{"array"},
 			Items: &base.DynamicValue[*base.SchemaProxy, bool]{
-				A: convertMessageToSchema(parsedFile, itemType),
+				A: convertMessageToSchema(parsedFile, itemType, doc),
 			},
 		})
 	}
 
 	if strings.HasPrefix(field.Type, "optional ") {
 		itemType := strings.TrimPrefix(field.Type, "optional ")
-		return convertMessageToSchema(parsedFile, itemType)
+		return convertMessageToSchema(parsedFile, itemType, doc)
 	}
 
 	if strings.HasPrefix(field.Type, "map<") {
@@ -326,7 +356,7 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile) *base.Sche
 			valueSchema = schema
 		} else {
 			// For message types, create a reference
-			valueSchema = convertMessageToSchema(parsedFile, valueType)
+			valueSchema = convertMessageToSchema(parsedFile, valueType, doc)
 		}
 
 		return base.CreateSchemaProxy(&base.Schema{
@@ -343,5 +373,15 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile) *base.Sche
 	}
 
 	// For message types, create a reference
-	return convertMessageToSchema(parsedFile, field.Type)
+	return convertMessageToSchema(parsedFile, field.Type, doc)
+}
+
+// isPrimitiveType checks if a type is a primitive type
+func isPrimitiveType(typeName string) bool {
+	switch typeName {
+	case "string", "bytes", "int32", "int64", "uint32", "uint64", "float", "double", "bool", "google.protobuf.Timestamp":
+		return true
+	default:
+		return false
+	}
 }
