@@ -51,6 +51,74 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 				Responses: &high.Responses{
 					Codes: orderedmap.New[string, *high.Response](),
 				},
+				Parameters: make([]*high.Parameter, 0),
+			}
+
+			// Extract path parameters
+			pathParams := extractPathParameters(path)
+			for _, param := range pathParams {
+				required := true
+				operation.Parameters = append(operation.Parameters, &high.Parameter{
+					Name:        param,
+					In:          "path",
+					Required:    &required,
+					Schema:      createPrimitiveSchema("string"),
+					Description: fmt.Sprintf("Path parameter %s", param),
+				})
+			}
+
+			// Find the input message type
+			var inputMessage *ParsedMessage
+			for _, msg := range parsedFile.Messages {
+				if msg.Name == method.InputType {
+					inputMessage = &msg
+					break
+				}
+			}
+
+			// Add query parameters from input message fields
+			if inputMessage != nil {
+				bodyField := method.HTTPBody
+				pathParamMap := make(map[string]bool)
+				for _, param := range pathParams {
+					pathParamMap[param] = true
+				}
+
+				for _, field := range inputMessage.Fields {
+					// Skip fields that are in the path or body
+					if pathParamMap[field.Name] || field.Name == bodyField {
+						continue
+					}
+
+					// Create query parameter
+					required := !strings.HasPrefix(field.Type, "optional")
+					param := &high.Parameter{
+						Name:        field.Name,
+						In:          "query",
+						Required:    &required,
+						Description: fmt.Sprintf("Query parameter %s", field.Name),
+					}
+
+					// Handle array type for query parameters
+					if strings.HasPrefix(field.Type, "repeated ") {
+						itemType := strings.TrimPrefix(field.Type, "repeated ")
+						if schema := createPrimitiveSchema(itemType); schema != nil {
+							explode := true
+							param.Schema = base.CreateSchemaProxy(&base.Schema{
+								Type: []string{"array"},
+								Items: &base.DynamicValue[*base.SchemaProxy, bool]{
+									A: schema,
+								},
+							})
+							param.Style = "form"
+							param.Explode = &explode
+						}
+					} else {
+						param.Schema = convertFieldToSchema(&field, parsedFile)
+					}
+
+					operation.Parameters = append(operation.Parameters, param)
+				}
 			}
 
 			// Set operation based on HTTP method
@@ -114,6 +182,26 @@ func convertMethodToPath(method ParsedMethod) string {
 		}
 	}
 	return "/" + strings.ToLower(path)
+}
+
+// extractPathParameters extracts parameter names from a path template
+func extractPathParameters(path string) []string {
+	var params []string
+	start := 0
+	for i := 0; i < len(path); i++ {
+		if path[i] == '{' {
+			start = i + 1
+		} else if path[i] == '}' && start > 0 {
+			param := path[start:i]
+			// Handle field path notation (e.g., {user.name})
+			if dotIndex := strings.LastIndex(param, "."); dotIndex != -1 {
+				param = param[dotIndex+1:]
+			}
+			params = append(params, param)
+			start = 0
+		}
+	}
+	return params
 }
 
 // convertMessageToSchema converts a message to a schema
