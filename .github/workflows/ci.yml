@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+        check-latest: true
+        cache: true
+        cache-dependency-path: |
+          **/go.sum
+          **/go.mod
+
+    - name: Install protoc
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y protobuf-compiler
+
+    - name: Install OpenAPI validator
+      run: |
+        sudo npm install -g @apidevtools/swagger-cli
+
+    - name: Build and test
+      run: |
+        go build -o protoc-gen-openapiv3
+        protoc --plugin=protoc-gen-openapiv3=./protoc-gen-openapiv3 \
+          --openapiv3_out=output=./testdata/test.openapi.yaml,output-format=yaml:. \
+          --proto_path=./testdata \
+          ./testdata/test.proto
+
+    - name: Validate OpenAPI spec
+      run: |
+        swagger-cli validate ./testdata/test.openapi.yaml 
