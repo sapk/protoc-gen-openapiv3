@@ -82,7 +82,8 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 
 			// Add response content
 			response := &high.Response{
-				Content: orderedmap.New[string, *high.MediaType](),
+				Description: fmt.Sprintf("Response for %s operation", method.Name),
+				Content:     orderedmap.New[string, *high.MediaType](),
 			}
 			response.Content.Set("application/json", &high.MediaType{
 				Schema: convertMessageToSchema(parsedFile, method.OutputType),
@@ -119,29 +120,32 @@ func convertMethodToPath(method ParsedMethod) string {
 func convertMessageToSchema(parsedFile *ParsedFile, messageName string) *base.SchemaProxy {
 	// Find the message in the parsed file
 	var message *ParsedMessage
-	for i := range parsedFile.Messages {
-		if parsedFile.Messages[i].Name == messageName {
-			message = &parsedFile.Messages[i]
-			break
+	if parsedFile != nil {
+		for i := range parsedFile.Messages {
+			if parsedFile.Messages[i].Name == messageName {
+				message = &parsedFile.Messages[i]
+				break
+			}
 		}
 	}
 
 	if message == nil {
+		// If message not found, create a reference to the schema
 		return base.CreateSchemaProxy(&base.Schema{
-			Type: []string{"object"},
+			Type:        []string{"object"},
+			Description: fmt.Sprintf("Reference to %s schema", messageName),
 		})
 	}
 
 	// Create the schema
 	schema := &base.Schema{
-		Type:       []string{"object"},
 		Properties: orderedmap.New[string, *base.SchemaProxy](),
 		Required:   make([]string, 0),
 	}
 
 	// Convert fields to properties
 	for _, field := range message.Fields {
-		property := convertFieldToSchema(&field)
+		property := convertFieldToSchema(&field, parsedFile)
 		schema.Properties.Set(field.Name, property)
 		if !strings.HasPrefix(field.Type, "optional") {
 			schema.Required = append(schema.Required, field.Name)
@@ -152,26 +156,64 @@ func convertMessageToSchema(parsedFile *ParsedFile, messageName string) *base.Sc
 }
 
 // convertFieldToSchema converts a field to a schema
-func convertFieldToSchema(field *ParsedField) *base.SchemaProxy {
-	return base.CreateSchemaProxy(&base.Schema{
-		Type: []string{convertProtoTypeToOpenAPIType(field.Type)},
-	})
-}
+func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile) *base.SchemaProxy {
+	// Handle special types
+	if strings.HasPrefix(field.Type, "repeated ") {
+		itemType := strings.TrimPrefix(field.Type, "repeated ")
+		return base.CreateSchemaProxy(&base.Schema{
+			Type: []string{"array"},
+			Items: &base.DynamicValue[*base.SchemaProxy, bool]{
+				A: convertMessageToSchema(parsedFile, itemType),
+			},
+		})
+	}
 
-// convertProtoTypeToOpenAPIType converts a proto type to an OpenAPI type
-func convertProtoTypeToOpenAPIType(protoType string) string {
-	switch protoType {
+	if strings.HasPrefix(field.Type, "optional ") {
+		itemType := strings.TrimPrefix(field.Type, "optional ")
+		return convertMessageToSchema(parsedFile, itemType)
+	}
+
+	if strings.HasPrefix(field.Type, "map<") {
+		// Extract key and value types from map<key, value>
+		mapType := strings.TrimPrefix(field.Type, "map<")
+		mapType = strings.TrimSuffix(mapType, ">")
+		parts := strings.Split(mapType, ", ")
+		if len(parts) != 2 {
+			return convertMessageToSchema(parsedFile, parts[1])
+		}
+		valueType := parts[1]
+		return base.CreateSchemaProxy(&base.Schema{
+			Type: []string{"object"},
+			AdditionalProperties: &base.DynamicValue[*base.SchemaProxy, bool]{
+				A: convertMessageToSchema(parsedFile, valueType),
+			},
+		})
+	}
+
+	// Handle primitive types
+	switch field.Type {
 	case "string":
-		return "string"
+		return base.CreateSchemaProxy(&base.Schema{
+			Type: []string{"string"},
+		})
 	case "int32", "int64", "uint32", "uint64":
-		return "integer"
+		return base.CreateSchemaProxy(&base.Schema{
+			Type: []string{"integer"},
+		})
 	case "float", "double":
-		return "number"
+		return base.CreateSchemaProxy(&base.Schema{
+			Type: []string{"number"},
+		})
 	case "bool":
-		return "boolean"
+		return base.CreateSchemaProxy(&base.Schema{
+			Type: []string{"boolean"},
+		})
 	case "bytes":
-		return "string"
+		return base.CreateSchemaProxy(&base.Schema{
+			Type: []string{"string"},
+		})
 	default:
-		return "object"
+		// For message types, create a reference
+		return convertMessageToSchema(parsedFile, field.Type)
 	}
 }
