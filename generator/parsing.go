@@ -2,7 +2,6 @@ package generator
 
 import (
 	"fmt"
-	"strings"
 
 	"google.golang.org/genproto/googleapis/api/annotations"
 	"google.golang.org/protobuf/compiler/protogen"
@@ -260,14 +259,4 @@ func (g *OpenAPIGenerator) parseEnumValue(value *protogen.EnumValue) (ParsedEnum
 	}
 
 	return parsed, nil
-}
-
-// toOpenAPIName converts proto field names to OpenAPI names
-func toOpenAPIName(name string) string {
-	// Convert snake_case to camelCase
-	parts := strings.Split(name, "_")
-	for i := 1; i < len(parts); i++ {
-		parts[i] = strings.Title(parts[i])
-	}
-	return strings.Join(parts, "")
 }
