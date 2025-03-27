@@ -18,38 +18,38 @@ func TestConvertToOpenAPI(t *testing.T) {
 				Methods: []generator.ParsedMethod{
 					{
 						Name:       "GetUser",
-						InputType:  "GetUserRequest",
-						OutputType: "User",
+						InputType:  "test.package.GetUserRequest",
+						OutputType: "test.package.User",
 						HTTPMethod: "GET",
 						HTTPPath:   "/v1/users/{user_id}",
 					},
 					{
 						Name:       "CreateUser",
-						InputType:  "CreateUserRequest",
-						OutputType: "User",
+						InputType:  "test.package.CreateUserRequest",
+						OutputType: "test.package.User",
 						HTTPMethod: "POST",
 						HTTPPath:   "/v1/users",
 						HTTPBody:   "user",
 					},
 					{
 						Name:       "UpdateUser",
-						InputType:  "UpdateUserRequest",
-						OutputType: "User",
+						InputType:  "test.package.UpdateUserRequest",
+						OutputType: "test.package.User",
 						HTTPMethod: "PUT",
 						HTTPPath:   "/v1/users/{user_id}",
 						HTTPBody:   "user",
 					},
 					{
 						Name:       "PatchUser",
-						InputType:  "PatchUserRequest",
-						OutputType: "User",
+						InputType:  "test.package.PatchUserRequest",
+						OutputType: "test.package.User",
 						HTTPMethod: "PATCH",
 						HTTPPath:   "/v1/users/{user_id}",
 						HTTPBody:   "user",
 					},
 					{
 						Name:       "DeleteUser",
-						InputType:  "DeleteUserRequest",
+						InputType:  "test.package.DeleteUserRequest",
 						OutputType: "google.protobuf.Empty",
 						HTTPMethod: "DELETE",
 						HTTPPath:   "/v1/users/{user_id}",
@@ -203,7 +203,7 @@ func TestConvertToOpenAPI(t *testing.T) {
 	assert.NotNil(t, content.Schema)
 
 	// Test schemas
-	assert.Equal(t, 6, doc.Components.Schemas.Len())
+	assert.Equal(t, 4, doc.Components.Schemas.Len())
 }
 
 func TestConvertToOpenAPI_NilFile(t *testing.T) {
