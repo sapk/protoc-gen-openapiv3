@@ -218,6 +218,11 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile) *base.Sche
 		return base.CreateSchemaProxy(&base.Schema{
 			Type: []string{"string"},
 		})
+	case "google.protobuf.Timestamp":
+		return base.CreateSchemaProxy(&base.Schema{
+			Type:   []string{"string"},
+			Format: "date-time",
+		})
 	default:
 		// For message types, create a reference
 		return convertMessageToSchema(parsedFile, field.Type)
