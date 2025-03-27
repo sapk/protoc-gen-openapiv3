@@ -442,13 +442,3 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile, doc *high.
 	// For message types, create a reference
 	return convertMessageToSchema(parsedFile, field.Type, doc)
 }
-
-// isPrimitiveType checks if a type is a primitive type
-func isPrimitiveType(typeName string) bool {
-	switch typeName {
-	case "string", "bytes", "int32", "int64", "uint32", "uint64", "float", "double", "bool", "google.protobuf.Timestamp", "google.protobuf.Empty":
-		return true
-	default:
-		return false
-	}
-}
