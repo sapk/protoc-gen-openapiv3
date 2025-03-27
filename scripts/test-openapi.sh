@@ -13,14 +13,8 @@ protoc --plugin=protoc-gen-openapiv3=./protoc-gen-openapiv3 \
   --proto_path=./testdata \
   ./testdata/test.proto
 
-# Install swagger-cli if not already installed
-if ! command -v swagger-cli &> /dev/null; then
-  echo "Installing swagger-cli..."
-  sudo npm install -g @apidevtools/swagger-cli
-fi
-
 # Validate OpenAPI spec
 echo "Validating OpenAPI spec..."
-swagger-cli validate ./testdata/test.openapi.yaml
+redocly lint ./testdata/test.openapi.yaml
 
 echo "Test completed successfully!" 
