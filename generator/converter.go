@@ -159,77 +159,60 @@ func convertMessageToSchema(parsedFile *ParsedFile, messageName string) *base.Sc
 	return base.CreateSchemaProxy(schema)
 }
 
+// createPrimitiveSchema creates a schema for a primitive type
+func createPrimitiveSchema(primitiveType string) *base.SchemaProxy {
+	switch primitiveType {
+	case "string":
+		return base.CreateSchemaProxy(&base.Schema{
+			Type: []string{"string"},
+		})
+	case "bytes":
+		return base.CreateSchemaProxy(&base.Schema{
+			Type: []string{"string"},
+		})
+	case "int32", "int64", "uint32", "uint64":
+		return base.CreateSchemaProxy(&base.Schema{
+			Type: []string{"integer"},
+		})
+	case "float", "double":
+		return base.CreateSchemaProxy(&base.Schema{
+			Type: []string{"number"},
+		})
+	case "bool":
+		return base.CreateSchemaProxy(&base.Schema{
+			Type: []string{"boolean"},
+		})
+	case "google.protobuf.Timestamp":
+		return base.CreateSchemaProxy(&base.Schema{
+			Type:   []string{"string"},
+			Format: "date-time",
+		})
+	default:
+		return nil
+	}
+}
+
 // convertFieldToSchema converts a field to a schema
 func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile) *base.SchemaProxy {
 	// Handle special types
 	if strings.HasPrefix(field.Type, "repeated ") {
 		itemType := strings.TrimPrefix(field.Type, "repeated ")
 		// For primitive types, create the schema directly
-		switch itemType {
-		case "string":
+		if schema := createPrimitiveSchema(itemType); schema != nil {
 			return base.CreateSchemaProxy(&base.Schema{
 				Type: []string{"array"},
 				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
-					A: base.CreateSchemaProxy(&base.Schema{
-						Type: []string{"string"},
-					}),
-				},
-			})
-		case "int32", "int64", "uint32", "uint64":
-			return base.CreateSchemaProxy(&base.Schema{
-				Type: []string{"array"},
-				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
-					A: base.CreateSchemaProxy(&base.Schema{
-						Type: []string{"integer"},
-					}),
-				},
-			})
-		case "float", "double":
-			return base.CreateSchemaProxy(&base.Schema{
-				Type: []string{"array"},
-				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
-					A: base.CreateSchemaProxy(&base.Schema{
-						Type: []string{"number"},
-					}),
-				},
-			})
-		case "bool":
-			return base.CreateSchemaProxy(&base.Schema{
-				Type: []string{"array"},
-				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
-					A: base.CreateSchemaProxy(&base.Schema{
-						Type: []string{"boolean"},
-					}),
-				},
-			})
-		case "bytes":
-			return base.CreateSchemaProxy(&base.Schema{
-				Type: []string{"array"},
-				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
-					A: base.CreateSchemaProxy(&base.Schema{
-						Type: []string{"string"},
-					}),
-				},
-			})
-		case "google.protobuf.Timestamp":
-			return base.CreateSchemaProxy(&base.Schema{
-				Type: []string{"array"},
-				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
-					A: base.CreateSchemaProxy(&base.Schema{
-						Type:   []string{"string"},
-						Format: "date-time",
-					}),
-				},
-			})
-		default:
-			// For message types, create a reference
-			return base.CreateSchemaProxy(&base.Schema{
-				Type: []string{"array"},
-				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
-					A: convertMessageToSchema(parsedFile, itemType),
+					A: schema,
 				},
 			})
 		}
+		// For message types, create a reference
+		return base.CreateSchemaProxy(&base.Schema{
+			Type: []string{"array"},
+			Items: &base.DynamicValue[*base.SchemaProxy, bool]{
+				A: convertMessageToSchema(parsedFile, itemType),
+			},
+		})
 	}
 
 	if strings.HasPrefix(field.Type, "optional ") {
@@ -251,33 +234,9 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile) *base.Sche
 
 		// Handle primitive value types directly
 		var valueSchema *base.SchemaProxy
-		switch valueType {
-		case "string":
-			valueSchema = base.CreateSchemaProxy(&base.Schema{
-				Type: []string{"string"},
-			})
-		case "int32", "int64", "uint32", "uint64":
-			valueSchema = base.CreateSchemaProxy(&base.Schema{
-				Type: []string{"integer"},
-			})
-		case "float", "double":
-			valueSchema = base.CreateSchemaProxy(&base.Schema{
-				Type: []string{"number"},
-			})
-		case "bool":
-			valueSchema = base.CreateSchemaProxy(&base.Schema{
-				Type: []string{"boolean"},
-			})
-		case "bytes":
-			valueSchema = base.CreateSchemaProxy(&base.Schema{
-				Type: []string{"string"},
-			})
-		case "google.protobuf.Timestamp":
-			valueSchema = base.CreateSchemaProxy(&base.Schema{
-				Type:   []string{"string"},
-				Format: "date-time",
-			})
-		default:
+		if schema := createPrimitiveSchema(valueType); schema != nil {
+			valueSchema = schema
+		} else {
 			// For message types, create a reference
 			valueSchema = convertMessageToSchema(parsedFile, valueType)
 		}
@@ -291,34 +250,10 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile) *base.Sche
 	}
 
 	// Handle primitive types
-	switch field.Type {
-	case "string":
-		return base.CreateSchemaProxy(&base.Schema{
-			Type: []string{"string"},
-		})
-	case "int32", "int64", "uint32", "uint64":
-		return base.CreateSchemaProxy(&base.Schema{
-			Type: []string{"integer"},
-		})
-	case "float", "double":
-		return base.CreateSchemaProxy(&base.Schema{
-			Type: []string{"number"},
-		})
-	case "bool":
-		return base.CreateSchemaProxy(&base.Schema{
-			Type: []string{"boolean"},
-		})
-	case "bytes":
-		return base.CreateSchemaProxy(&base.Schema{
-			Type: []string{"string"},
-		})
-	case "google.protobuf.Timestamp":
-		return base.CreateSchemaProxy(&base.Schema{
-			Type:   []string{"string"},
-			Format: "date-time",
-		})
-	default:
-		// For message types, create a reference
-		return convertMessageToSchema(parsedFile, field.Type)
+	if schema := createPrimitiveSchema(field.Type); schema != nil {
+		return schema
 	}
+
+	// For message types, create a reference
+	return convertMessageToSchema(parsedFile, field.Type)
 }
