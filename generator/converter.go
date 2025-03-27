@@ -7,6 +7,7 @@ import (
 	"github.com/pb33f/libopenapi/datamodel/high/base"
 	high "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
+	"gopkg.in/yaml.v3"
 )
 
 // ConvertToOpenAPI converts a ParsedFile to a libopenapi Document
@@ -240,7 +241,35 @@ func convertMessageToSchema(parsedFile *ParsedFile, messageName string, doc *hig
 		}
 
 		if message == nil {
-			// If message not found, create a reference to the schema
+			// If message not found, check if it's an enum
+			var enum *ParsedEnum
+			if parsedFile != nil {
+				for i := range parsedFile.Enums {
+					if parsedFile.Enums[i].Name == name {
+						enum = &parsedFile.Enums[i]
+						break
+					}
+				}
+			}
+
+			if enum != nil {
+				// Create enum schema
+				schema := &base.Schema{
+					Type: []string{"string"},
+					Enum: make([]*yaml.Node, len(enum.Values)),
+				}
+				for i, value := range enum.Values {
+					schema.Enum[i] = &yaml.Node{
+						Kind:  yaml.ScalarNode,
+						Value: value.Name,
+					}
+				}
+				schemaProxy := base.CreateSchemaProxy(schema)
+				doc.Components.Schemas.Set(name, schemaProxy)
+				return schemaProxy
+			}
+
+			// If not an enum, create a reference to the schema
 			// Strip package name from the reference
 			refName := name
 			if strings.Contains(name, ".") {
