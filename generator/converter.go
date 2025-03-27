@@ -151,11 +151,16 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 			// Add response content
 			response := &high.Response{
 				Description: fmt.Sprintf("Response for %s operation", method.Name),
-				Content:     orderedmap.New[string, *high.MediaType](),
 			}
-			response.Content.Set("application/json", &high.MediaType{
-				Schema: convertMessageToSchema(parsedFile, method.OutputType, doc),
-			})
+
+			// Only add content if the response type is not Empty
+			if method.OutputType != "google.protobuf.Empty" {
+				response.Content = orderedmap.New[string, *high.MediaType]()
+				response.Content.Set("application/json", &high.MediaType{
+					Schema: convertMessageToSchema(parsedFile, method.OutputType, doc),
+				})
+			}
+
 			operation.Responses.Codes.Set("200", response)
 
 			// Update path item
@@ -305,6 +310,8 @@ func createPrimitiveSchema(primitiveType string) *base.SchemaProxy {
 			Type:   []string{"string"},
 			Format: "date-time",
 		})
+	case "google.protobuf.Empty":
+		return base.CreateSchemaProxy(nil)
 	default:
 		return nil
 	}
@@ -379,7 +386,7 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile, doc *high.
 // isPrimitiveType checks if a type is a primitive type
 func isPrimitiveType(typeName string) bool {
 	switch typeName {
-	case "string", "bytes", "int32", "int64", "uint32", "uint64", "float", "double", "bool", "google.protobuf.Timestamp":
+	case "string", "bytes", "int32", "int64", "uint32", "uint64", "float", "double", "bool", "google.protobuf.Timestamp", "google.protobuf.Empty":
 		return true
 	default:
 		return false
