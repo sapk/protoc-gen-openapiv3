@@ -131,14 +131,18 @@ func convertMessageToSchema(parsedFile *ParsedFile, messageName string) *base.Sc
 
 	if message == nil {
 		// If message not found, create a reference to the schema
-		return base.CreateSchemaProxy(&base.Schema{
-			Type:        []string{"object"},
-			Description: fmt.Sprintf("Reference to %s schema", messageName),
-		})
+		// Strip package name from the reference
+		refName := messageName
+		if strings.Contains(messageName, ".") {
+			parts := strings.Split(messageName, ".")
+			refName = parts[len(parts)-1]
+		}
+		return base.CreateSchemaProxyRef(fmt.Sprintf("#/components/schemas/%s", refName))
 	}
 
 	// Create the schema
 	schema := &base.Schema{
+		Type:       []string{"object"},
 		Properties: orderedmap.New[string, *base.SchemaProxy](),
 		Required:   make([]string, 0),
 	}
@@ -179,7 +183,9 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile) *base.Sche
 		mapType = strings.TrimSuffix(mapType, ">")
 		parts := strings.Split(mapType, ", ")
 		if len(parts) != 2 {
-			return convertMessageToSchema(parsedFile, parts[1])
+			return base.CreateSchemaProxy(&base.Schema{
+				Type: []string{"object"},
+			})
 		}
 		valueType := parts[1]
 		return base.CreateSchemaProxy(&base.Schema{
