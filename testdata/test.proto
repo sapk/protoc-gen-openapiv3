@@ -27,6 +27,21 @@ option (protoc_gen_openapiv3.options.info) = {
   version: "1.2.3"
 };
 
+option (protoc_gen_openapiv3.options.server) = {
+  url: "https://dev.example.com/v1"
+  description: "Development server"
+};
+
+option (protoc_gen_openapiv3.options.server) = {
+  url: "https://preprod.example.com/v1"
+  description: "PreProduction server"
+}; 
+
+option (protoc_gen_openapiv3.options.server) = {
+  url: "https://example.com/v1"
+  description: "Production server"
+}; 
+
 // UserService provides operations for managing users
 service UserService {
   // GetUser retrieves a user by ID
