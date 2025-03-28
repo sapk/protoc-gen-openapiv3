@@ -58,6 +58,29 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 		}
 	}
 
+	// Convert Servers if present
+	if len(parsedFile.Servers) > 0 {
+		doc.Servers = make([]*high.Server, len(parsedFile.Servers))
+		for i, server := range parsedFile.Servers {
+			doc.Servers[i] = &high.Server{
+				URL:         server.GetUrl(),
+				Description: server.GetDescription(),
+			}
+
+			// Handle Server Variables if present
+			if len(server.GetVariables()) > 0 {
+				doc.Servers[i].Variables = orderedmap.New[string, *high.ServerVariable]()
+				for name, variable := range server.GetVariables() {
+					doc.Servers[i].Variables.Set(name, &high.ServerVariable{
+						Enum:        variable.GetEnum(),
+						Default:     variable.GetDefault(),
+						Description: variable.GetDescription(),
+					})
+				}
+			}
+		}
+	}
+
 	// Convert services to paths
 	for _, service := range parsedFile.Services {
 		for _, method := range service.Methods {
