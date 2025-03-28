@@ -239,6 +239,134 @@ func (x *Info) GetVersion() string {
 	return ""
 }
 
+// OpenAPI Server Variable object
+type ServerVariable struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Enum        []string `protobuf:"bytes,1,rep,name=enum,proto3" json:"enum,omitempty"`
+	Default     string   `protobuf:"bytes,2,opt,name=default,proto3" json:"default,omitempty"`
+	Description string   `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+}
+
+func (x *ServerVariable) Reset() {
+	*x = ServerVariable{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_options_openapiv3_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ServerVariable) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServerVariable) ProtoMessage() {}
+
+func (x *ServerVariable) ProtoReflect() protoreflect.Message {
+	mi := &file_options_openapiv3_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServerVariable.ProtoReflect.Descriptor instead.
+func (*ServerVariable) Descriptor() ([]byte, []int) {
+	return file_options_openapiv3_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ServerVariable) GetEnum() []string {
+	if x != nil {
+		return x.Enum
+	}
+	return nil
+}
+
+func (x *ServerVariable) GetDefault() string {
+	if x != nil {
+		return x.Default
+	}
+	return ""
+}
+
+func (x *ServerVariable) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+// OpenAPI Server object
+type Server struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Url         string                     `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	Description string                     `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	Variables   map[string]*ServerVariable `protobuf:"bytes,3,rep,name=variables,proto3" json:"variables,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+}
+
+func (x *Server) Reset() {
+	*x = Server{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_options_openapiv3_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Server) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Server) ProtoMessage() {}
+
+func (x *Server) ProtoReflect() protoreflect.Message {
+	mi := &file_options_openapiv3_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Server.ProtoReflect.Descriptor instead.
+func (*Server) Descriptor() ([]byte, []int) {
+	return file_options_openapiv3_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *Server) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *Server) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *Server) GetVariables() map[string]*ServerVariable {
+	if x != nil {
+		return x.Variables
+	}
+	return nil
+}
+
 var File_options_openapiv3_proto protoreflect.FileDescriptor
 
 var file_options_openapiv3_proto_rawDesc = []byte{
@@ -269,7 +397,29 @@ var file_options_openapiv3_proto_rawDesc = []byte{
 	0x69, 0x76, 0x33, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x4c, 0x69, 0x63, 0x65,
 	0x6e, 0x73, 0x65, 0x52, 0x07, 0x6c, 0x69, 0x63, 0x65, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07,
 	0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76,
-	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x42, 0x2e, 0x5a, 0x2c, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
+	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x22, 0x60, 0x0a, 0x0e, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72,
+	0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x65, 0x6e, 0x75, 0x6d,
+	0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x04, 0x65, 0x6e, 0x75, 0x6d, 0x12, 0x18, 0x0a, 0x07,
+	0x64, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x64,
+	0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69,
+	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65, 0x73,
+	0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0xfb, 0x01, 0x0a, 0x06, 0x53, 0x65, 0x72,
+	0x76, 0x65, 0x72, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x03, 0x75, 0x72, 0x6c, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70,
+	0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63,
+	0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x51, 0x0a, 0x09, 0x76, 0x61, 0x72, 0x69, 0x61,
+	0x62, 0x6c, 0x65, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x33, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x63, 0x5f, 0x67, 0x65, 0x6e, 0x5f, 0x6f, 0x70, 0x65, 0x6e, 0x61, 0x70, 0x69, 0x76,
+	0x33, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72,
+	0x2e, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52,
+	0x09, 0x76, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x1a, 0x6a, 0x0a, 0x0e, 0x56, 0x61,
+	0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03,
+	0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x42,
+	0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2c, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x5f, 0x67, 0x65, 0x6e, 0x5f, 0x6f, 0x70, 0x65, 0x6e, 0x61,
+	0x70, 0x69, 0x76, 0x33, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x53, 0x65, 0x72,
+	0x76, 0x65, 0x72, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x52, 0x05, 0x76, 0x61, 0x6c,
+	0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x42, 0x2e, 0x5a, 0x2c, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
 	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x61, 0x70, 0x6b, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63,
 	0x2d, 0x67, 0x65, 0x6e, 0x2d, 0x6f, 0x70, 0x65, 0x6e, 0x61, 0x70, 0x69, 0x76, 0x33, 0x2f, 0x6f,
 	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
@@ -287,20 +437,25 @@ func file_options_openapiv3_proto_rawDescGZIP() []byte {
 	return file_options_openapiv3_proto_rawDescData
 }
 
-var file_options_openapiv3_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_options_openapiv3_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_options_openapiv3_proto_goTypes = []interface{}{
-	(*Contact)(nil), // 0: protoc_gen_openapiv3.options.Contact
-	(*License)(nil), // 1: protoc_gen_openapiv3.options.License
-	(*Info)(nil),    // 2: protoc_gen_openapiv3.options.Info
+	(*Contact)(nil),        // 0: protoc_gen_openapiv3.options.Contact
+	(*License)(nil),        // 1: protoc_gen_openapiv3.options.License
+	(*Info)(nil),           // 2: protoc_gen_openapiv3.options.Info
+	(*ServerVariable)(nil), // 3: protoc_gen_openapiv3.options.ServerVariable
+	(*Server)(nil),         // 4: protoc_gen_openapiv3.options.Server
+	nil,                    // 5: protoc_gen_openapiv3.options.Server.VariablesEntry
 }
 var file_options_openapiv3_proto_depIdxs = []int32{
 	0, // 0: protoc_gen_openapiv3.options.Info.contact:type_name -> protoc_gen_openapiv3.options.Contact
 	1, // 1: protoc_gen_openapiv3.options.Info.license:type_name -> protoc_gen_openapiv3.options.License
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	5, // 2: protoc_gen_openapiv3.options.Server.variables:type_name -> protoc_gen_openapiv3.options.Server.VariablesEntry
+	3, // 3: protoc_gen_openapiv3.options.Server.VariablesEntry.value:type_name -> protoc_gen_openapiv3.options.ServerVariable
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_options_openapiv3_proto_init() }
@@ -345,6 +500,30 @@ func file_options_openapiv3_proto_init() {
 				return nil
 			}
 		}
+		file_options_openapiv3_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ServerVariable); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_options_openapiv3_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Server); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -352,7 +531,7 @@ func file_options_openapiv3_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_options_openapiv3_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
