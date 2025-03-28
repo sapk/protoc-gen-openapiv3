@@ -14,11 +14,11 @@ import "options/annotations.proto";
 option (protoc_gen_openapiv3.options.info) = {
   title: "User Management API"
   description: "API for managing users in the system. Provides CRUD operations and user status management."
-  terms_of_service: "https://example.com/terms"
+  terms_of_service: "https://test.com/terms"
   contact: {
     name: "API Support"
-    url: "https://example.com/support"
-    email: "support@example.com"
+    url: "https://test.com/support"
+    email: "support@test.com"
   }
   license: {
     name: "Apache 2.0"
@@ -28,17 +28,17 @@ option (protoc_gen_openapiv3.options.info) = {
 };
 
 option (protoc_gen_openapiv3.options.server) = {
-  url: "https://dev.example.com/v1"
+  url: "https://dev.test.com/v1"
   description: "Development server"
 };
 
 option (protoc_gen_openapiv3.options.server) = {
-  url: "https://preprod.example.com/v1"
+  url: "https://preprod.test.com/v1"
   description: "PreProduction server"
 }; 
 
 option (protoc_gen_openapiv3.options.server) = {
-  url: "https://example.com/v1"
+  url: "https://test.com/v1"
   description: "Production server"
 }; 
 
