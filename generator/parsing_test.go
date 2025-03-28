@@ -22,7 +22,12 @@ func TestParseProtoFile(t *testing.T) {
 	pbFile := filepath.Join(tmpDir, "test.pb")
 
 	// Generate descriptor set
-	cmd := exec.Command("protoc", "--descriptor_set_out="+pbFile, "--include_imports", "--proto_path=../", "--proto_path=../testdata", "../testdata/test.proto")
+	cmd := exec.Command("protoc",
+		"--descriptor_set_out="+pbFile,
+		"--include_imports",
+		"--proto_path=../",
+		"--proto_path=../testdata",
+		"../testdata/test.proto")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Fatalf("protoc failed: %v\nOutput: %s", err, output)
@@ -40,9 +45,9 @@ func TestParseProtoFile(t *testing.T) {
 	require.NoError(t, err)
 
 	// Find the main proto file and keep track of its index
-	var mainFileIndex int
+	mainFileIndex := -1
 	for i, file := range fdSet.File {
-		if file.GetName() == "test.proto" {
+		if file.GetName() == "testdata/test.proto" {
 			mainFileIndex = i
 			break
 		}
@@ -52,7 +57,7 @@ func TestParseProtoFile(t *testing.T) {
 	// Create a test plugin with all files but only process the main one
 	gen, err := protogen.Options{}.New(&pluginpb.CodeGeneratorRequest{
 		ProtoFile:      fdSet.File,
-		FileToGenerate: []string{"test.proto"},
+		FileToGenerate: []string{"testdata/test.proto"},
 	})
 	require.NoError(t, err)
 
