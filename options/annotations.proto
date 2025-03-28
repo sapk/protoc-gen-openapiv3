@@ -11,4 +11,5 @@ option go_package = "github.com/sapk/protoc-gen-openapiv3/options";
 extend google.protobuf.FileOptions {
   // Info provides metadata about the API.
   Info info = 50000;
+  repeated Server server = 50001;
 } 
