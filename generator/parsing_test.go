@@ -22,7 +22,7 @@ func TestParseProtoFile(t *testing.T) {
 	pbFile := filepath.Join(tmpDir, "test.pb")
 
 	// Generate descriptor set
-	cmd := exec.Command("protoc", "--descriptor_set_out="+pbFile, "--include_imports", "--proto_path=../testdata", "../testdata/test.proto")
+	cmd := exec.Command("protoc", "--descriptor_set_out="+pbFile, "--include_imports", "--proto_path=../", "--proto_path=../testdata", "../testdata/test.proto")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Fatalf("protoc failed: %v\nOutput: %s", err, output)

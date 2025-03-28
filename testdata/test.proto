@@ -8,7 +8,6 @@ option go_package = "github.com/sapk/protoc-gen-openapiv3/testdata;testdata";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
-import "options/openapiv3.proto";
 import "options/annotations.proto";
 
 option (protoc_gen_openapiv3.options.info) = {
