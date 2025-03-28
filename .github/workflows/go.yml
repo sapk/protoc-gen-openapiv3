@@ -38,8 +38,9 @@ jobs:
       with:
         files: ./coverage.txt
         fail_ci_if_error: true
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        token: ${{ secrets.CODECOV_TOKEN }}
+        slug: sapk/protoc-gen-openapiv3
+        
   lint:
     runs-on: ubuntu-latest
     steps:
