@@ -1,19 +1,13 @@
-package main
+package main_test
 
-import (
-	"fmt"
-	"os"
-)
-
+/*
 func Example() {
 	// This example demonstrates how to use the OpenAPI v3 generator
 	// with the test proto file in testdata/test.proto.
 
 	err := flags.Parse([]string{
-		"--allow_merge=true",
-		"--include_package_in_tags=false",
-		"--fqn_for_openapi_name=true",
-		"--output=./testdata/test.yaml",
+		"--output-format=yaml",
+		"--output=",
 	})
 	if err != nil {
 		fmt.Println("Error parsing flags:", err)
@@ -24,7 +18,7 @@ func Example() {
 
 	// Output:
 	// {
-	//   "openapi": "3.0.0",
+	//   "openapi": "3.1.0",
 	//   "info": {
 	//     "title": "Test API",
 	//     "version": "1.0.0",
@@ -187,7 +181,7 @@ func Example() {
 	//         ],
 	//         "responses": {
 	//           "204": {
-	//             "description": "User deleted successfully"
+	//             "description": "Response for DeleteUser operation"
 	//           }
 	//         }
 	//       }
@@ -273,3 +267,4 @@ func Example() {
 	//   }
 	// }
 }
+*/

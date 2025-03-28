@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package protoc_gen_openapiv3.options;
+
+option go_package = "github.com/sapk/protoc-gen-openapiv3/options";
+
+// Contact information for the exposed API.
+message Contact {
+  // The identifying name of the contact person/organization.
+  string name = 1;
+  // The URL pointing to the contact information. MUST be in the format of a URL.
+  string url = 2;
+  // The email address of the contact person/organization. MUST be in the format of an email address.
+  string email = 3;
+}
+
+// License information for the exposed API.
+message License {
+  // The license name used for the API.
+  string name = 1;
+  // A URL to the license used for the API. MUST be in the format of a URL.
+  string url = 2;
+}
+
+// Info provides metadata about the API.
+message Info {
+  // The title of the application.
+  string title = 1;
+  // A short description of the application. CommonMark syntax MAY be used for rich text representation.
+  string description = 2;
+  // A URL to the Terms of Service for the API. MUST be in the format of a URL.
+  string terms_of_service = 3;
+  // The contact information for the exposed API.
+  Contact contact = 4;
+  // The license information for the exposed API.
+  License license = 5;
+  // The version of the OpenAPI document.
+  string version = 6;
+}
