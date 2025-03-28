@@ -18,7 +18,7 @@ type ParsedFile struct {
 	Enums       []ParsedEnum
 	Imports     []string
 	Annotations map[string]string
-	Info        *ParsedInfo
+	Info        *options.Info
 }
 
 // ParsedService represents a parsed service definition
@@ -68,29 +68,6 @@ type ParsedEnumValue struct {
 	Annotations map[string]string
 }
 
-// ParsedInfo represents the OpenAPI Info object
-type ParsedInfo struct {
-	Title          string
-	Description    string
-	TermsOfService string
-	Contact        *ParsedContact
-	License        *ParsedLicense
-	Version        string
-}
-
-// ParsedContact represents the OpenAPI Contact object
-type ParsedContact struct {
-	Name  string
-	URL   string
-	Email string
-}
-
-// ParsedLicense represents the OpenAPI License object
-type ParsedLicense struct {
-	Name string
-	URL  string
-}
-
 // ParseProtoFile parses a proto file and extracts all necessary information
 func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, error) {
 	parsed := &ParsedFile{
@@ -113,29 +90,9 @@ func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, err
 		// Parse OpenAPI Info options
 		infoExt := proto.GetExtension(file.Desc.Options(), options.E_Info)
 		if infoExt != nil {
-			info := infoExt.(*options.Info)
-			parsed.Info = &ParsedInfo{
-				Title:          info.GetTitle(),
-				Description:    info.GetDescription(),
-				TermsOfService: info.GetTermsOfService(),
-				Version:        info.GetVersion(),
-			}
-
-			// Parse Contact
-			if info.Contact != nil {
-				parsed.Info.Contact = &ParsedContact{
-					Name:  info.Contact.GetName(),
-					URL:   info.Contact.GetUrl(),
-					Email: info.Contact.GetEmail(),
-				}
-			}
-
-			// Parse License
-			if info.License != nil {
-				parsed.Info.License = &ParsedLicense{
-					Name: info.License.GetName(),
-					URL:  info.License.GetUrl(),
-				}
+			info, ok := infoExt.(*options.Info)
+			if ok {
+				parsed.Info = info
 			}
 		}
 	}
