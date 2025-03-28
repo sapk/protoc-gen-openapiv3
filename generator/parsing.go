@@ -6,6 +6,8 @@ import (
 	"google.golang.org/genproto/googleapis/api/annotations"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/sapk/protoc-gen-openapiv3/options"
 )
 
 // ParsedFile represents the parsed proto file with all necessary information
@@ -16,6 +18,7 @@ type ParsedFile struct {
 	Enums       []ParsedEnum
 	Imports     []string
 	Annotations map[string]string
+	Info        *ParsedInfo
 }
 
 // ParsedService represents a parsed service definition
@@ -65,6 +68,29 @@ type ParsedEnumValue struct {
 	Annotations map[string]string
 }
 
+// ParsedInfo represents the OpenAPI Info object
+type ParsedInfo struct {
+	Title          string
+	Description    string
+	TermsOfService string
+	Contact        *ParsedContact
+	License        *ParsedLicense
+	Version        string
+}
+
+// ParsedContact represents the OpenAPI Contact object
+type ParsedContact struct {
+	Name  string
+	URL   string
+	Email string
+}
+
+// ParsedLicense represents the OpenAPI License object
+type ParsedLicense struct {
+	Name string
+	URL  string
+}
+
 // ParseProtoFile parses a proto file and extracts all necessary information
 func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, error) {
 	parsed := &ParsedFile{
@@ -80,6 +106,38 @@ func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, err
 	for i := 0; i < file.Desc.Imports().Len(); i++ {
 		imp := file.Desc.Imports().Get(i)
 		parsed.Imports = append(parsed.Imports, imp.Path())
+	}
+
+	// Parse options
+	if file.Desc.Options() != nil {
+		// Parse OpenAPI Info options
+		infoExt := proto.GetExtension(file.Desc.Options(), options.E_Info)
+		if infoExt != nil {
+			info := infoExt.(*options.Info)
+			parsed.Info = &ParsedInfo{
+				Title:          info.GetTitle(),
+				Description:    info.GetDescription(),
+				TermsOfService: info.GetTermsOfService(),
+				Version:        info.GetVersion(),
+			}
+
+			// Parse Contact
+			if info.Contact != nil {
+				parsed.Info.Contact = &ParsedContact{
+					Name:  info.Contact.GetName(),
+					URL:   info.Contact.GetUrl(),
+					Email: info.Contact.GetEmail(),
+				}
+			}
+
+			// Parse License
+			if info.License != nil {
+				parsed.Info.License = &ParsedLicense{
+					Name: info.License.GetName(),
+					URL:  info.License.GetUrl(),
+				}
+			}
+		}
 	}
 
 	// Parse services
