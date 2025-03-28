@@ -10,6 +10,17 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Split method comment into summary and description
+func splitComment(comment string) (summary string, description string) {
+	commentLines := strings.Split(comment, "\n")
+	summary = strings.TrimSpace(commentLines[0])
+	if len(commentLines) > 1 {
+		description = strings.TrimSpace(strings.Join(commentLines[1:], "\n"))
+	}
+
+	return summary, description
+}
+
 // ConvertToOpenAPI converts a ParsedFile to a libopenapi Document
 func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 	if parsedFile == nil {
@@ -95,10 +106,14 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 				pathItem = &high.PathItem{}
 			}
 
+			summary, description := splitComment(method.Comment)
+
 			// Create operation based on HTTP method
 			operation := &high.Operation{
 				OperationId: method.Name,
-				Summary:     fmt.Sprintf("%s operation", method.Name),
+				Summary:     summary,
+				Description: description,
+				Tags:        []string{service.Name},
 				Responses: &high.Responses{
 					Codes: orderedmap.New[string, *high.Response](),
 				},
@@ -113,7 +128,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 					Name:        param,
 					In:          "path",
 					Required:    &required,
-					Schema:      createPrimitiveSchema("string"),
+					Schema:      createPrimitiveSchema("string", ""),
 					Description: fmt.Sprintf("Path parameter %s", param),
 				})
 			}
@@ -153,7 +168,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 					// Handle array type for query parameters
 					if strings.HasPrefix(field.Type, "repeated ") {
 						itemType := strings.TrimPrefix(field.Type, "repeated ")
-						if schema := createPrimitiveSchema(itemType); schema != nil {
+						if schema := createPrimitiveSchema(itemType, strings.TrimSpace(field.Comment)); schema != nil {
 							explode := true
 							param.Schema = base.CreateSchemaProxy(&base.Schema{
 								Type: []string{"array"},
@@ -315,9 +330,10 @@ func handleMessage(parsedFile *ParsedFile, name string, doc *high.Document) *bas
 
 	// Create the schema
 	schema := &base.Schema{
-		Type:       []string{"object"},
-		Properties: orderedmap.New[string, *base.SchemaProxy](),
-		Required:   make([]string, 0),
+		Type:        []string{"object"},
+		Properties:  orderedmap.New[string, *base.SchemaProxy](),
+		Required:    make([]string, 0),
+		Description: strings.TrimSpace(message.Comment),
 	}
 
 	// Convert fields to properties
@@ -354,8 +370,9 @@ func handleEnum(parsedFile *ParsedFile, name string, doc *high.Document) *base.S
 
 	// Create enum schema
 	schema := &base.Schema{
-		Type: []string{"string"},
-		Enum: make([]*yaml.Node, len(enum.Values)),
+		Type:        []string{"string"},
+		Enum:        make([]*yaml.Node, len(enum.Values)),
+		Description: strings.TrimSpace(enum.Comment),
 	}
 	for i, value := range enum.Values {
 		schema.Enum[i] = &yaml.Node{
@@ -391,32 +408,38 @@ func handleReference(name string, doc *high.Document, convert func(string) *base
 }
 
 // createPrimitiveSchema creates a schema for a primitive type
-func createPrimitiveSchema(primitiveType string) *base.SchemaProxy {
+func createPrimitiveSchema(primitiveType string, description string) *base.SchemaProxy {
 	switch primitiveType {
 	case "string":
 		return base.CreateSchemaProxy(&base.Schema{
-			Type: []string{"string"},
+			Type:        []string{"string"},
+			Description: description,
 		})
 	case "bytes":
 		return base.CreateSchemaProxy(&base.Schema{
-			Type: []string{"string"},
+			Type:        []string{"string"},
+			Description: description,
 		})
 	case "int32", "int64", "uint32", "uint64":
 		return base.CreateSchemaProxy(&base.Schema{
-			Type: []string{"integer"},
+			Type:        []string{"integer"},
+			Description: description,
 		})
 	case "float", "double":
 		return base.CreateSchemaProxy(&base.Schema{
-			Type: []string{"number"},
+			Type:        []string{"number"},
+			Description: description,
 		})
 	case "bool":
 		return base.CreateSchemaProxy(&base.Schema{
-			Type: []string{"boolean"},
+			Type:        []string{"boolean"},
+			Description: description,
 		})
 	case "google.protobuf.Timestamp":
 		return base.CreateSchemaProxy(&base.Schema{
-			Type:   []string{"string"},
-			Format: "date-time",
+			Type:        []string{"string"},
+			Format:      "date-time",
+			Description: description,
 		})
 	case "google.protobuf.Empty":
 		return base.CreateSchemaProxy(nil)
@@ -431,12 +454,13 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile, doc *high.
 	if strings.HasPrefix(field.Type, "repeated ") {
 		itemType := strings.TrimPrefix(field.Type, "repeated ")
 		// For primitive types, create the schema directly
-		if schema := createPrimitiveSchema(itemType); schema != nil {
+		if schema := createPrimitiveSchema(itemType, strings.TrimSpace(field.Comment)); schema != nil {
 			return base.CreateSchemaProxy(&base.Schema{
 				Type: []string{"array"},
 				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
 					A: schema,
 				},
+				Description: strings.TrimSpace(field.Comment),
 			})
 		}
 		// For message types, create a reference
@@ -445,6 +469,7 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile, doc *high.
 			Items: &base.DynamicValue[*base.SchemaProxy, bool]{
 				A: convertMessageToSchema(parsedFile, itemType, doc),
 			},
+			Description: strings.TrimSpace(field.Comment),
 		})
 	}
 
@@ -460,14 +485,15 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile, doc *high.
 		parts := strings.Split(mapType, ", ")
 		if len(parts) != 2 {
 			return base.CreateSchemaProxy(&base.Schema{
-				Type: []string{"object"},
+				Type:        []string{"object"},
+				Description: strings.TrimSpace(field.Comment),
 			})
 		}
 		valueType := parts[1]
 
 		// Handle primitive value types directly
 		var valueSchema *base.SchemaProxy
-		if schema := createPrimitiveSchema(valueType); schema != nil {
+		if schema := createPrimitiveSchema(valueType, strings.TrimSpace(field.Comment)); schema != nil {
 			valueSchema = schema
 		} else {
 			// For message types, create a reference
@@ -483,7 +509,7 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile, doc *high.
 	}
 
 	// Handle primitive types
-	if schema := createPrimitiveSchema(field.Type); schema != nil {
+	if schema := createPrimitiveSchema(field.Type, strings.TrimSpace(field.Comment)); schema != nil {
 		return schema
 	}
 

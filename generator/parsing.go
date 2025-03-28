@@ -27,6 +27,7 @@ type ParsedService struct {
 	Name        string
 	Methods     []ParsedMethod
 	Annotations map[string]string
+	Comment     string
 }
 
 // ParsedMethod represents a parsed method definition
@@ -38,6 +39,7 @@ type ParsedMethod struct {
 	HTTPPath    string
 	HTTPBody    string
 	Annotations map[string]string
+	Comment     string
 }
 
 // ParsedMessage represents a parsed message definition
@@ -45,6 +47,7 @@ type ParsedMessage struct {
 	Name        string
 	Fields      []ParsedField
 	Annotations map[string]string
+	Comment     string
 }
 
 // ParsedField represents a parsed field definition
@@ -53,6 +56,7 @@ type ParsedField struct {
 	Type        string
 	Number      int32
 	Annotations map[string]string
+	Comment     string
 }
 
 // ParsedEnum represents a parsed enum definition
@@ -60,6 +64,7 @@ type ParsedEnum struct {
 	Name        string
 	Values      []ParsedEnumValue
 	Annotations map[string]string
+	Comment     string
 }
 
 // ParsedEnumValue represents a parsed enum value
@@ -144,6 +149,7 @@ func (g *OpenAPIGenerator) parseService(service *protogen.Service) (ParsedServic
 		Name:        string(service.Desc.Name()),
 		Methods:     make([]ParsedMethod, 0),
 		Annotations: make(map[string]string),
+		Comment:     string(service.Comments.Leading),
 	}
 
 	// Parse methods
@@ -165,6 +171,7 @@ func (g *OpenAPIGenerator) parseMethod(method *protogen.Method) (ParsedMethod, e
 		InputType:   string(method.Input.Desc.FullName()),
 		OutputType:  string(method.Output.Desc.FullName()),
 		Annotations: make(map[string]string),
+		Comment:     string(method.Comments.Leading),
 	}
 
 	// Parse HTTP annotations
@@ -206,6 +213,7 @@ func (g *OpenAPIGenerator) parseMessage(message *protogen.Message) (ParsedMessag
 		Name:        string(message.Desc.Name()),
 		Fields:      make([]ParsedField, 0),
 		Annotations: make(map[string]string),
+		Comment:     string(message.Comments.Leading),
 	}
 
 	// Parse fields
@@ -226,6 +234,7 @@ func (g *OpenAPIGenerator) parseField(field *protogen.Field) (ParsedField, error
 		Name:        string(field.Desc.Name()),
 		Number:      int32(field.Desc.Number()),
 		Annotations: make(map[string]string),
+		Comment:     string(field.Comments.Leading),
 	}
 
 	// Handle field type
@@ -262,6 +271,7 @@ func (g *OpenAPIGenerator) parseEnum(enum *protogen.Enum) (ParsedEnum, error) {
 		Name:        string(enum.Desc.Name()),
 		Values:      make([]ParsedEnumValue, 0),
 		Annotations: make(map[string]string),
+		Comment:     string(enum.Comments.Leading),
 	}
 
 	// Parse enum values
