@@ -40,6 +40,7 @@ type ParsedMethod struct {
 	HTTPBody    string
 	Annotations map[string]string
 	Comment     string
+	Operation   *options.Operation
 }
 
 // ParsedMessage represents a parsed message definition
@@ -200,6 +201,15 @@ func (g *OpenAPIGenerator) parseMethod(method *protogen.Method) (ParsedMethod, e
 			// Parse body field
 			if httpRule.Body != "" {
 				parsed.HTTPBody = httpRule.Body
+			}
+		}
+
+		// Parse OpenAPI Operation annotation
+		operationExt := proto.GetExtension(method.Desc.Options(), options.E_Operation)
+		if operationExt != nil {
+			operation, ok := operationExt.(*options.Operation)
+			if ok {
+				parsed.Operation = operation
 			}
 		}
 	}
