@@ -37,6 +37,7 @@ jobs:
         protoc --plugin=protoc-gen-openapiv3=./protoc-gen-openapiv3 \
           --openapiv3_out=output=./testdata/test.openapi.yaml,output-format=yaml:. \
           --proto_path=./testdata \
+          --proto_path=. \
           ./testdata/test.proto
 
     - name: Validate OpenAPI spec
