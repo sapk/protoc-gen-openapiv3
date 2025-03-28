@@ -31,6 +31,33 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 		},
 	}
 
+	// Convert Info object if present
+	if parsedFile.Info != nil {
+		doc.Info = &base.Info{
+			Title:          parsedFile.Info.GetTitle(),
+			Description:    parsedFile.Info.GetDescription(),
+			TermsOfService: parsedFile.Info.GetTermsOfService(),
+			Version:        parsedFile.Info.GetVersion(),
+		}
+
+		// Handle Contact
+		if parsedFile.Info.Contact != nil {
+			doc.Info.Contact = &base.Contact{
+				Name:  parsedFile.Info.Contact.GetName(),
+				URL:   parsedFile.Info.Contact.GetUrl(),
+				Email: parsedFile.Info.Contact.GetEmail(),
+			}
+		}
+
+		// Handle License
+		if parsedFile.Info.License != nil {
+			doc.Info.License = &base.License{
+				Name: parsedFile.Info.License.GetName(),
+				URL:  parsedFile.Info.License.GetUrl(),
+			}
+		}
+	}
+
 	// Convert services to paths
 	for _, service := range parsedFile.Services {
 		for _, method := range service.Methods {
