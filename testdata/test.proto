@@ -42,8 +42,10 @@ option (protoc_gen_openapiv3.options.server) = {
 }; 
 
 // UserService provides operations for managing users
+// This service handles all user-related operations including CRUD operations and user status management.
 service UserService {
   // GetUser retrieves a user by ID
+  // Returns the full user details including profile information, status, and metadata.
   rpc GetUser(GetUserRequest) returns (User) {
     option (google.api.http) = {
       get: "/v1/users/{user_id}"
@@ -51,6 +53,7 @@ service UserService {
   }
 
   // ListUsers retrieves a list of users with optional filtering
+  // Returns a paginated list of users that can be filtered by status, roles, and search query.
   rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
     option (google.api.http) = {
       get: "/v1/users"
@@ -58,6 +61,7 @@ service UserService {
   }
 
   // CreateUser creates a new user
+  // Creates a new user with the provided details and returns the created user with generated ID.
   rpc CreateUser(CreateUserRequest) returns (User) {
     option (google.api.http) = {
       post: "/v1/users"
@@ -66,6 +70,7 @@ service UserService {
   }
 
   // UpdateUser updates an existing user
+  // Updates all fields of an existing user with the provided values.
   rpc UpdateUser(UpdateUserRequest) returns (User) {
     option (google.api.http) = {
       put: "/v1/users/{user_id}"
@@ -74,6 +79,7 @@ service UserService {
   }
 
   // PatchUser partially updates an existing user
+  // Updates only the specified fields of an existing user while preserving other fields.
   rpc PatchUser(PatchUserRequest) returns (User) {
     option (google.api.http) = {
       patch: "/v1/users/{user_id}"
@@ -82,6 +88,7 @@ service UserService {
   }
 
   // DeleteUser deletes a user
+  // Permanently removes a user from the system.
   rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete: "/v1/users/{user_id}"
@@ -90,6 +97,7 @@ service UserService {
 }
 
 // User represents a user in the system
+// Contains all user information including profile details, status, and metadata.
 message User {
   string user_id = 1;
   string email = 2;
@@ -103,6 +111,7 @@ message User {
 }
 
 // Address represents a physical address
+// Contains structured address information for a user's physical location.
 message Address {
   string street = 1;
   string city = 2;
@@ -112,6 +121,7 @@ message Address {
 }
 
 // UserStatus represents the current status of a user
+// Defines the possible states a user can be in within the system.
 enum UserStatus {
   USER_STATUS_UNSPECIFIED = 0;
   USER_STATUS_ACTIVE = 1;
@@ -121,11 +131,13 @@ enum UserStatus {
 }
 
 // GetUserRequest is used to retrieve a single user
+// Contains the user ID needed to fetch the user details.
 message GetUserRequest {
   string user_id = 1;
 }
 
 // ListUsersRequest is used to retrieve a list of users with filtering
+// Supports pagination and various filtering options to find specific users.
 message ListUsersRequest {
   int32 page_size = 1;
   string page_token = 2;
@@ -135,6 +147,9 @@ message ListUsersRequest {
 }
 
 // ListUsersResponse contains the list of users and pagination information
+//
+// Returns the filtered list of users 
+// along with pagination metadata.
 message ListUsersResponse {
   repeated User users = 1;
   string next_page_token = 2;
@@ -142,22 +157,28 @@ message ListUsersResponse {
 }
 
 // CreateUserRequest is used to create a new user
+// Contains the user details needed to create a new user account.
 message CreateUserRequest {
   User user = 1;
 }
 
 // UpdateUserRequest is used to update an existing user
+// Contains the user ID and the updated user details.
 message UpdateUserRequest {
   string user_id = 1;
   User user = 2;
 }
 
 // DeleteUserRequest is used to delete a user
+//
+// Contains the user ID of the user to be deleted.
 message DeleteUserRequest {
   string user_id = 1;
 }
 
 // PatchUserRequest is used to partially update an existing user
+//
+// Contains the user ID and the fields to be updated.
 message PatchUserRequest {
   string user_id = 1;
   User user = 2;
