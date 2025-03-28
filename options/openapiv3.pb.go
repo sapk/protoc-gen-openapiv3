@@ -367,6 +367,90 @@ func (x *Server) GetVariables() map[string]*ServerVariable {
 	return nil
 }
 
+// OpenAPI Operation object
+type Operation struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// retrieve from comment string summary = 1;
+	// retrieve from comment string description = 2;
+	Tags     []string `protobuf:"bytes,3,rep,name=tags,proto3" json:"tags,omitempty"`
+	Produces []string `protobuf:"bytes,4,rep,name=produces,proto3" json:"produces,omitempty"`
+	Consumes []string `protobuf:"bytes,5,rep,name=consumes,proto3" json:"consumes,omitempty"`
+	// TODO repeated Parameter parameters = 6;
+	// TODO repeated Response responses = 7;
+	Deprecated bool     `protobuf:"varint,8,opt,name=deprecated,proto3" json:"deprecated,omitempty"`
+	Security   []string `protobuf:"bytes,9,rep,name=security,proto3" json:"security,omitempty"` // TODO RequestBody request_body = 10;
+}
+
+func (x *Operation) Reset() {
+	*x = Operation{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_options_openapiv3_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Operation) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Operation) ProtoMessage() {}
+
+func (x *Operation) ProtoReflect() protoreflect.Message {
+	mi := &file_options_openapiv3_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Operation.ProtoReflect.Descriptor instead.
+func (*Operation) Descriptor() ([]byte, []int) {
+	return file_options_openapiv3_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *Operation) GetTags() []string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *Operation) GetProduces() []string {
+	if x != nil {
+		return x.Produces
+	}
+	return nil
+}
+
+func (x *Operation) GetConsumes() []string {
+	if x != nil {
+		return x.Consumes
+	}
+	return nil
+}
+
+func (x *Operation) GetDeprecated() bool {
+	if x != nil {
+		return x.Deprecated
+	}
+	return false
+}
+
+func (x *Operation) GetSecurity() []string {
+	if x != nil {
+		return x.Security
+	}
+	return nil
+}
+
 var File_options_openapiv3_proto protoreflect.FileDescriptor
 
 var file_options_openapiv3_proto_rawDesc = []byte{
@@ -419,10 +503,20 @@ var file_options_openapiv3_proto_rawDesc = []byte{
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x5f, 0x67, 0x65, 0x6e, 0x5f, 0x6f, 0x70, 0x65, 0x6e, 0x61,
 	0x70, 0x69, 0x76, 0x33, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x53, 0x65, 0x72,
 	0x76, 0x65, 0x72, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x52, 0x05, 0x76, 0x61, 0x6c,
-	0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x42, 0x2e, 0x5a, 0x2c, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x61, 0x70, 0x6b, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63,
-	0x2d, 0x67, 0x65, 0x6e, 0x2d, 0x6f, 0x70, 0x65, 0x6e, 0x61, 0x70, 0x69, 0x76, 0x33, 0x2f, 0x6f,
-	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x93, 0x01, 0x0a, 0x09, 0x4f, 0x70, 0x65, 0x72, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x61, 0x67, 0x73, 0x18, 0x03, 0x20, 0x03,
+	0x28, 0x09, 0x52, 0x04, 0x74, 0x61, 0x67, 0x73, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x72, 0x6f, 0x64,
+	0x75, 0x63, 0x65, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x52, 0x08, 0x70, 0x72, 0x6f, 0x64,
+	0x75, 0x63, 0x65, 0x73, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x6f, 0x6e, 0x73, 0x75, 0x6d, 0x65, 0x73,
+	0x18, 0x05, 0x20, 0x03, 0x28, 0x09, 0x52, 0x08, 0x63, 0x6f, 0x6e, 0x73, 0x75, 0x6d, 0x65, 0x73,
+	0x12, 0x1e, 0x0a, 0x0a, 0x64, 0x65, 0x70, 0x72, 0x65, 0x63, 0x61, 0x74, 0x65, 0x64, 0x18, 0x08,
+	0x20, 0x01, 0x28, 0x08, 0x52, 0x0a, 0x64, 0x65, 0x70, 0x72, 0x65, 0x63, 0x61, 0x74, 0x65, 0x64,
+	0x12, 0x1a, 0x0a, 0x08, 0x73, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x18, 0x09, 0x20, 0x03,
+	0x28, 0x09, 0x52, 0x08, 0x73, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x42, 0x2e, 0x5a, 0x2c,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x61, 0x70, 0x6b, 0x2f,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x2d, 0x67, 0x65, 0x6e, 0x2d, 0x6f, 0x70, 0x65, 0x6e, 0x61,
+	0x70, 0x69, 0x76, 0x33, 0x2f, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -437,19 +531,20 @@ func file_options_openapiv3_proto_rawDescGZIP() []byte {
 	return file_options_openapiv3_proto_rawDescData
 }
 
-var file_options_openapiv3_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_options_openapiv3_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_options_openapiv3_proto_goTypes = []interface{}{
 	(*Contact)(nil),        // 0: protoc_gen_openapiv3.options.Contact
 	(*License)(nil),        // 1: protoc_gen_openapiv3.options.License
 	(*Info)(nil),           // 2: protoc_gen_openapiv3.options.Info
 	(*ServerVariable)(nil), // 3: protoc_gen_openapiv3.options.ServerVariable
 	(*Server)(nil),         // 4: protoc_gen_openapiv3.options.Server
-	nil,                    // 5: protoc_gen_openapiv3.options.Server.VariablesEntry
+	(*Operation)(nil),      // 5: protoc_gen_openapiv3.options.Operation
+	nil,                    // 6: protoc_gen_openapiv3.options.Server.VariablesEntry
 }
 var file_options_openapiv3_proto_depIdxs = []int32{
 	0, // 0: protoc_gen_openapiv3.options.Info.contact:type_name -> protoc_gen_openapiv3.options.Contact
 	1, // 1: protoc_gen_openapiv3.options.Info.license:type_name -> protoc_gen_openapiv3.options.License
-	5, // 2: protoc_gen_openapiv3.options.Server.variables:type_name -> protoc_gen_openapiv3.options.Server.VariablesEntry
+	6, // 2: protoc_gen_openapiv3.options.Server.variables:type_name -> protoc_gen_openapiv3.options.Server.VariablesEntry
 	3, // 3: protoc_gen_openapiv3.options.Server.VariablesEntry.value:type_name -> protoc_gen_openapiv3.options.ServerVariable
 	4, // [4:4] is the sub-list for method output_type
 	4, // [4:4] is the sub-list for method input_type
@@ -524,6 +619,18 @@ func file_options_openapiv3_proto_init() {
 				return nil
 			}
 		}
+		file_options_openapiv3_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Operation); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -531,7 +638,7 @@ func file_options_openapiv3_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_options_openapiv3_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
