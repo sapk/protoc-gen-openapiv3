@@ -106,6 +106,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 				pathItem = &high.PathItem{}
 			}
 
+			// Get summary and description from comment
 			summary, description := splitComment(method.Comment)
 
 			// Create operation based on HTTP method
@@ -118,6 +119,19 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 					Codes: orderedmap.New[string, *high.Response](),
 				},
 				Parameters: make([]*high.Parameter, 0),
+			}
+
+			// Set operation annotation
+			if method.Operation != nil {
+				if method.Operation.GetSummary() != "" {
+					operation.Summary = method.Operation.GetSummary()
+				}
+				if method.Operation.GetDescription() != "" {
+					operation.Description = method.Operation.GetDescription()
+				}
+				if method.Operation.GetDeprecated() {
+					operation.Deprecated = &method.Operation.Deprecated
+				}
 			}
 
 			// Extract path parameters
