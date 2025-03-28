@@ -24,6 +24,6 @@ Thumbs.db
 
 # Generated files
 /protoc-gen-openapiv3
-*.pb.go
+/testdata/*.pb.go
 *.openapi.json 
 *.openapi.yaml

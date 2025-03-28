@@ -1,4 +1,4 @@
 package options
 
-//go:generate protoc --go_out=. --go_opt=paths=source_relative openapiv3.proto
-//go:generate protoc --go_out=. --go_opt=paths=source_relative annotations.proto
+//go:generate protoc --proto_path=../ --go_out=../ --go_opt=paths=source_relative ../options/openapiv3.proto
+//go:generate protoc --proto_path=../ --go_out=../ --go_opt=paths=source_relative ../options/annotations.proto

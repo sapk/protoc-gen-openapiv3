@@ -3,7 +3,7 @@ syntax = "proto3";
 package protoc_gen_openapiv3.options;
 
 import "google/protobuf/descriptor.proto";
-import "openapiv3.proto";
+import "options/openapiv3.proto";
 
 option go_package = "github.com/sapk/protoc-gen-openapiv3/options";
 
