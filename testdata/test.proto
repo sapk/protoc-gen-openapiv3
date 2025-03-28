@@ -50,6 +50,10 @@ service UserService {
     option (google.api.http) = {
       get: "/v1/users/{user_id}"
     };
+    option (protoc_gen_openapiv3.options.operation) = {
+      summary: "GetUser retrieves a user by ID (override)"
+      description: "Returns the full user details including profile information, status, and metadata. (override)"
+    }; 
   }
 
   // ListUsers retrieves a list of users with optional filtering
