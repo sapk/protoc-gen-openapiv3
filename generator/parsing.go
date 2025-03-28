@@ -19,6 +19,7 @@ type ParsedFile struct {
 	Imports     []string
 	Annotations map[string]string
 	Info        *options.Info
+	Servers     []*options.Server
 }
 
 // ParsedService represents a parsed service definition
@@ -77,6 +78,7 @@ func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, err
 		Messages:    make([]ParsedMessage, 0),
 		Enums:       make([]ParsedEnum, 0),
 		Imports:     make([]string, 0),
+		Servers:     make([]*options.Server, 0),
 	}
 
 	// Parse imports
@@ -93,6 +95,15 @@ func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, err
 			info, ok := infoExt.(*options.Info)
 			if ok {
 				parsed.Info = info
+			}
+		}
+
+		// Parse OpenAPI Server options
+		serversExt := proto.GetExtension(file.Desc.Options(), options.E_Server)
+		if serversExt != nil {
+			servers, ok := serversExt.([]*options.Server)
+			if ok {
+				parsed.Servers = servers
 			}
 		}
 	}
