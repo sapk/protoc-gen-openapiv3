@@ -51,3 +51,18 @@ message Server {
   string description = 2;
   map<string, ServerVariable> variables = 3;
 }
+
+
+// OpenAPI Operation object
+message Operation {
+  // retrieve from comment string summary = 1;
+  // retrieve from comment string description = 2;
+  repeated string tags = 3;
+  repeated string produces = 4;
+  repeated string consumes = 5;
+  // TODO repeated Parameter parameters = 6;
+  // TODO repeated Response responses = 7;
+  bool deprecated = 8;
+  repeated string security = 9;
+  // TODO RequestBody request_body = 10;
+}

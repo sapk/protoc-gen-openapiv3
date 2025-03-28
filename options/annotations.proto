@@ -7,9 +7,16 @@ import "options/openapiv3.proto";
 
 option go_package = "github.com/sapk/protoc-gen-openapiv3/options";
 
-// FileOptions represents the OpenAPI Info object options for a proto file.
+// FileOptions represents the OpenAPI object options for a proto file.
 extend google.protobuf.FileOptions {
   // Info provides metadata about the API.
   Info info = 50000;
+  // Server provides information about the server.
   repeated Server server = 50001;
+}
+
+// MethodOptions represents the OpenAPI path object options for a proto file.
+extend google.protobuf.MethodOptions {
+  // Operation provides operation details about the API.
+  Operation operation = 50002;
 } 
