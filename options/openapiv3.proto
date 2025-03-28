@@ -37,3 +37,17 @@ message Info {
   // The version of the OpenAPI document.
   string version = 6;
 }
+
+// OpenAPI Server Variable object
+message ServerVariable {
+  repeated string enum = 1;
+  string default = 2;
+  string description = 3;
+}
+
+// OpenAPI Server object
+message Server {
+  string url = 1;
+  string description = 2;
+  map<string, ServerVariable> variables = 3;
+}
