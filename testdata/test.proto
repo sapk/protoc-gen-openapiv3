@@ -214,6 +214,26 @@ service UserService {
         name: "oauth2"
         scopes: ["write"]
       }
+      request_body: {
+        description: "User object to be created"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/User"
+            }
+            examples: {
+              key: "user"
+              value: {
+                summary: "User Example"
+                description: "A sample user object"
+                value: "{\n  \"email\": \"john.doe@example.com\",\n  \"full_name\": \"John Doe\",\n  \"status\": \"USER_STATUS_ACTIVE\",\n  \"roles\": [\"user\"],\n  \"address\": {\n    \"street\": \"123 Main St\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"country\": \"USA\",\n    \"postal_code\": \"10001\"\n  }\n}"
+              }
+            }
+          }
+        }
+        required: true
+      }
       responses: {
         code: "201"
         description: "User successfully created"
@@ -276,6 +296,26 @@ service UserService {
       security: {
         name: "oauth2"
         scopes: ["write"]
+      }
+      request_body: {
+        description: "Updated user object"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/User"
+            }
+            examples: {
+              key: "user"
+              value: {
+                summary: "Updated User Example"
+                description: "A sample updated user object"
+                value: "{\n  \"email\": \"john.doe.updated@example.com\",\n  \"full_name\": \"John Doe Updated\",\n  \"status\": \"USER_STATUS_ACTIVE\",\n  \"roles\": [\"user\", \"premium\"],\n  \"address\": {\n    \"street\": \"456 New St\",\n    \"city\": \"Los Angeles\",\n    \"state\": \"CA\",\n    \"country\": \"USA\",\n    \"postal_code\": \"90001\"\n  }\n}"
+              }
+            }
+          }
+        }
+        required: true
       }
       responses: {
         code: "200"
