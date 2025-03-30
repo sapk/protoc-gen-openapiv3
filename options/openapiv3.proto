@@ -110,6 +110,207 @@ message SecurityRequirement {
   repeated string scopes = 2;
 }
 
+// Schema object represents a data type used in requests and responses
+message Schema {
+  // The type of the schema (string, number, array, object, etc.)
+  string type = 1;
+  // The format of the schema (date-time, int64, etc.)
+  string format = 2;
+  // Description of the schema. CommonMark syntax MAY be used for rich text representation.
+  string description = 3;
+  // The title of the schema
+  string title = 4;
+  // The default value for the schema
+  string default = 5;
+  // The multiple of the schema value
+  double multiple_of = 6;
+  // The maximum value of the schema
+  double maximum = 7;
+  // Whether the maximum value is exclusive
+  bool exclusive_maximum = 8;
+  // The minimum value of the schema
+  double minimum = 9;
+  // Whether the minimum value is exclusive
+  bool exclusive_minimum = 10;
+  // The maximum length of the schema value
+  int32 max_length = 11;
+  // The minimum length of the schema value
+  int32 min_length = 12;
+  // The pattern for the schema value (regular expression)
+  string pattern = 13;
+  // The maximum number of items in an array
+  int32 max_items = 14;
+  // The minimum number of items in an array
+  int32 min_items = 15;
+  // Whether array items must be unique
+  bool unique_items = 16;
+  // The maximum number of properties in an object
+  int32 max_properties = 17;
+  // The minimum number of properties in an object
+  int32 min_properties = 18;
+  // The required properties in an object
+  repeated string required = 19;
+  // The enumerated values for the schema
+  repeated string enum = 20;
+  // Whether the schema can be null
+  bool nullable = 21;
+  // The discriminator for polymorphism
+  Discriminator discriminator = 22;
+  // Whether the schema is read-only
+  bool read_only = 23;
+  // Whether the schema is write-only
+  bool write_only = 24;
+  // The XML representation of the schema
+  XML xml = 25;
+  // Additional external documentation
+  ExternalDocumentation external_docs = 26;
+  // An example of the schema
+  string example = 27;
+  // Whether the schema is deprecated
+  bool deprecated = 28;
+  // For array types, the schema of the items
+  Schema items = 29;
+  // Reference to another schema
+  string ref = 30;
+  // The properties of an object schema
+  map<string, Schema> properties = 31;
+  // Additional properties allowed in an object schema
+  oneof additional_properties {
+    bool allow_additional = 32;
+    Schema additional_schema = 33;
+  }
+  // Composition keywords
+  repeated Schema all_of = 34;
+  repeated Schema one_of = 35;
+  repeated Schema any_of = 36;
+  Schema not = 37;
+}
+
+// Discriminator object for polymorphism support
+message Discriminator {
+  // REQUIRED. The name of the property in the payload that will hold the discriminating value
+  string property_name = 1;
+  // An object to hold mappings between payload values and schema names or URI references
+  map<string, string> mapping = 2;
+}
+
+// XML object for XML representation of schema properties
+message XML {
+  // Replaces the name of the element/attribute used for the described schema property
+  string name = 1;
+  // The URI of the namespace definition
+  string namespace = 2;
+  // The prefix to be used for the name
+  string prefix = 3;
+  // Declares whether the property definition translates to an attribute instead of an element
+  bool attribute = 4;
+  // Signifies whether the array is wrapped
+  bool wrapped = 5;
+}
+
+// External Documentation object
+message ExternalDocumentation {
+  // A short description of the target documentation
+  string description = 1;
+  // REQUIRED. The URL for the target documentation
+  string url = 2;
+}
+
+// Header object follows the structure of Parameter Object with the following changes:
+// 1. name MUST NOT be specified, it is given in the corresponding headers map
+// 2. in MUST NOT be specified, it is implicitly in header
+// 3. required MUST NOT be specified, it is implied by the definition of the headers map
+message Header {
+  // A brief description of the header. CommonMark syntax MAY be used for rich text representation.
+  string description = 1;
+  // Determines whether this header is mandatory. The default value is false.
+  bool required = 2;
+  // Specifies that the header is deprecated and SHOULD be transitioned out of usage. Default value is false.
+  bool deprecated = 3;
+  // Describes how the header value will be serialized. The default (and only legal value for headers) is "simple".
+  string style = 4;
+  // When this is true, header values of type array or object generate a single header whose value is a comma-separated list
+  bool explode = 5;
+  // The schema defining the type used for the header
+  Schema schema = 6;
+  // Example of the header's potential value
+  string example = 7;
+  // Examples of the header's potential value
+  map<string, Example> examples = 8;
+  // A map containing the representations for the header. The key is the media type and the value describes it.
+  // The map MUST only contain one entry.
+  map<string, MediaType> content = 9;
+}
+
+// Media Type object provides schema and examples for the media type identified by its key
+message MediaType {
+  // The schema defining the content of the request, response, or parameter
+  Schema schema = 1;
+  // Example of the media type
+  string example = 2;
+  // Examples of the media type
+  map<string, Example> examples = 3;
+  // A map between a property name and its encoding information
+  map<string, Encoding> encoding = 4;
+}
+
+// Example object represents an example of a media type
+message Example {
+  // A short description of the example
+  string summary = 1;
+  // A long description of the example
+  string description = 2;
+  // The example value
+  string value = 3;
+  // A URL that points to the literal example
+  string external_value = 4;
+}
+
+// Encoding object represents encoding information for a property
+message Encoding {
+  // The Content-Type for encoding a specific property
+  string content_type = 1;
+  // A map allowing additional information to be provided as headers
+  map<string, Header> headers = 2;
+  // Describes how a specific property value will be serialized depending on its type
+  string style = 3;
+  // When this is true, property values of type array or object generate separate parameters for each array item or object property
+  bool explode = 4;
+  // Determines whether the parameter value SHOULD allow reserved characters
+  bool allow_reserved = 5;
+}
+
+// Link object represents a possible design-time link for a response
+message Link {
+  // A relative or absolute URI reference to an OAS operation
+  string operation_ref = 1;
+  // The name of an existing, resolvable OAS operation
+  string operation_id = 2;
+  // A map representing parameters to pass to an operation as specified with operation_id or identified via operation_ref
+  map<string, string> parameters = 3;
+  // A literal value or expression to use as a request body when calling the target operation
+  string request_body = 4;
+  // A description of the link. CommonMark syntax MAY be used for rich text representation.
+  string description = 5;
+  // A server object to be used by the target operation
+  Server server = 6;
+}
+
+// Response object describes a single response from an API operation
+message Response {
+  // REQUIRED. A description of the response. CommonMark syntax MAY be used for rich text representation.
+  string description = 1;
+  // Maps a header name to its definition. RFC7230 states header names are case insensitive.
+  // If a response header is defined with the name "Content-Type", it SHALL be ignored.
+  map<string, Header> headers = 2;
+  // A map containing descriptions of potential response payloads.
+  // The key is a media type or media type range and the value describes it.
+  map<string, MediaType> content = 3;
+  // A map of operations links that can be followed from the response.
+  // The key of the map is a short name for the link.
+  map<string, Link> links = 4;
+}
+
 // OpenAPI Operation object
 message Operation {
   string summary = 1;
@@ -118,7 +319,7 @@ message Operation {
   repeated string produces = 4;
   repeated string consumes = 5;
   // TODO repeated Parameter parameters = 6;
-  // TODO repeated Response responses = 7;
+  repeated Response responses = 7;
   bool deprecated = 8;
   repeated SecurityRequirement security = 9;
   // TODO RequestBody request_body = 10;
