@@ -7,6 +7,7 @@ import (
 	"github.com/pb33f/libopenapi/datamodel/high/base"
 	high "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
+	"github.com/sapk/protoc-gen-openapiv3/options"
 	"gopkg.in/yaml.v3"
 )
 
@@ -332,20 +333,78 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 				})
 			}
 
-			// Add response content
-			response := &high.Response{
-				Description: fmt.Sprintf("Response for %s operation", method.Name),
-			}
+			// Add responses from method's Responses field
+			if len(method.Responses) > 0 {
+				for _, resp := range method.Responses {
+					response := &high.Response{
+						Description: resp.GetDescription(),
+					}
 
-			// Only add content if the response type is not Empty
-			if method.OutputType != "google.protobuf.Empty" {
-				response.Content = orderedmap.New[string, *high.MediaType]()
-				response.Content.Set("application/json", &high.MediaType{
-					Schema: convertMessageToSchema(parsedFile, method.OutputType, doc),
-				})
-			}
+					// Add content if present
+					if len(resp.GetContent()) > 0 {
+						response.Content = orderedmap.New[string, *high.MediaType]()
+						for mediaType, content := range resp.GetContent() {
+							response.Content.Set(mediaType, &high.MediaType{
+								Schema: convertSchemaToOpenAPI(content.GetSchema(), doc),
+							})
+						}
+					}
 
-			operation.Responses.Codes.Set("200", response)
+					// Add headers if present
+					if len(resp.GetHeaders()) > 0 {
+						response.Headers = orderedmap.New[string, *high.Header]()
+						for name, header := range resp.GetHeaders() {
+							response.Headers.Set(name, &high.Header{
+								Description: header.GetDescription(),
+								Required:    header.GetRequired(),
+								Deprecated:  header.GetDeprecated(),
+								Style:       header.GetStyle(),
+								Explode:     header.GetExplode(),
+								Schema:      convertSchemaToOpenAPI(header.GetSchema(), doc),
+							})
+						}
+					}
+
+					// Add links if present
+					if len(resp.GetLinks()) > 0 {
+						response.Links = orderedmap.New[string, *high.Link]()
+						for name, link := range resp.GetLinks() {
+							response.Links.Set(name, &high.Link{
+								OperationRef: link.GetOperationRef(),
+								OperationId:  link.GetOperationId(),
+								Parameters:   orderedmap.New[string, string](),
+								RequestBody:  link.GetRequestBody(),
+								Description:  link.GetDescription(),
+								Server:       convertServerToOpenAPI(link.GetServer()),
+							})
+							// Add parameters to the ordered map
+							linkMap, exists := response.Links.Get(name)
+							if exists && linkMap != nil {
+								for k, v := range link.GetParameters() {
+									linkMap.Parameters.Set(k, v)
+								}
+							}
+						}
+					}
+
+					operation.Responses.Codes.Set(resp.GetCode(), response)
+				}
+			} else {
+				// Default response if no responses are specified
+				response := &high.Response{
+					Description: fmt.Sprintf("Response for %s operation", method.Name),
+				}
+
+				// Only add content if the response type is not Empty
+				if method.OutputType != "google.protobuf.Empty" {
+					response.Content = orderedmap.New[string, *high.MediaType]()
+					response.Content.Set("application/json", &high.MediaType{
+						Schema: convertMessageToSchema(parsedFile, method.OutputType, doc),
+					})
+				}
+
+				operation.Responses.Codes.Set("200", response)
+			}
 
 			// Update path item
 			doc.Paths.PathItems.Set(path, pathItem)
@@ -633,4 +692,179 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile, doc *high.
 
 	// For message types, create a reference
 	return convertMessageToSchema(parsedFile, field.Type, doc)
+}
+
+// convertSchemaToOpenAPI converts a protobuf Schema to an OpenAPI Schema
+func convertSchemaToOpenAPI(schema *options.Schema, doc *high.Document) *base.SchemaProxy {
+	if schema == nil {
+		return nil
+	}
+
+	openAPISchema := &base.Schema{
+		Type:        []string{schema.GetType()},
+		Format:      schema.GetFormat(),
+		Description: schema.GetDescription(),
+		Title:       schema.GetTitle(),
+		Default:     &yaml.Node{Value: schema.GetDefault()},
+		Enum:        make([]*yaml.Node, len(schema.GetEnum())),
+		Nullable:    &schema.Nullable,
+		ReadOnly:    &schema.ReadOnly,
+		WriteOnly:   &schema.WriteOnly,
+		Deprecated:  &schema.Deprecated,
+	}
+
+	// Set enum values
+	for i, value := range schema.GetEnum() {
+		openAPISchema.Enum[i] = &yaml.Node{
+			Kind:  yaml.ScalarNode,
+			Value: value,
+		}
+	}
+
+	// Set numeric constraints
+	if schema.GetMultipleOf() != 0 {
+		openAPISchema.MultipleOf = &schema.MultipleOf
+	}
+	if schema.GetMaximum() != 0 {
+		openAPISchema.Maximum = &schema.Maximum
+	}
+	if schema.GetExclusiveMaximum() {
+		exclusiveMax := schema.GetExclusiveMaximum()
+		openAPISchema.ExclusiveMaximum = &base.DynamicValue[bool, float64]{
+			A: exclusiveMax,
+		}
+	}
+	if schema.GetMinimum() != 0 {
+		openAPISchema.Minimum = &schema.Minimum
+	}
+	if schema.GetExclusiveMinimum() {
+		exclusiveMin := schema.GetExclusiveMinimum()
+		openAPISchema.ExclusiveMinimum = &base.DynamicValue[bool, float64]{
+			A: exclusiveMin,
+		}
+	}
+
+	// Set string constraints
+	if schema.GetMaxLength() != 0 {
+		maxLength := int64(schema.GetMaxLength())
+		openAPISchema.MaxLength = &maxLength
+	}
+	if schema.GetMinLength() != 0 {
+		minLength := int64(schema.GetMinLength())
+		openAPISchema.MinLength = &minLength
+	}
+	if schema.GetPattern() != "" {
+		pattern := schema.GetPattern()
+		openAPISchema.Pattern = pattern
+	}
+
+	// Set array constraints
+	if schema.GetMaxItems() != 0 {
+		maxItems := int64(schema.GetMaxItems())
+		openAPISchema.MaxItems = &maxItems
+	}
+	if schema.GetMinItems() != 0 {
+		minItems := int64(schema.GetMinItems())
+		openAPISchema.MinItems = &minItems
+	}
+	if schema.GetUniqueItems() {
+		openAPISchema.UniqueItems = &schema.UniqueItems
+	}
+
+	// Set object constraints
+	if schema.GetMaxProperties() != 0 {
+		maxProps := int64(schema.GetMaxProperties())
+		openAPISchema.MaxProperties = &maxProps
+	}
+	if schema.GetMinProperties() != 0 {
+		minProps := int64(schema.GetMinProperties())
+		openAPISchema.MinProperties = &minProps
+	}
+	if len(schema.GetRequired()) > 0 {
+		openAPISchema.Required = schema.GetRequired()
+	}
+
+	// Handle reference
+	if schema.GetRef() != "" {
+		return base.CreateSchemaProxyRef(schema.GetRef())
+	}
+
+	// Handle properties
+	if len(schema.GetProperties()) > 0 {
+		openAPISchema.Properties = orderedmap.New[string, *base.SchemaProxy]()
+		for name, prop := range schema.GetProperties() {
+			openAPISchema.Properties.Set(name, convertSchemaToOpenAPI(prop, doc))
+		}
+	}
+
+	// Handle additional properties
+	if schema.GetAdditionalProperties() != nil {
+		switch {
+		case schema.GetAllowAdditional():
+			openAPISchema.AdditionalProperties = &base.DynamicValue[*base.SchemaProxy, bool]{
+				B: true,
+			}
+		case schema.GetAdditionalSchema() != nil:
+			openAPISchema.AdditionalProperties = &base.DynamicValue[*base.SchemaProxy, bool]{
+				A: convertSchemaToOpenAPI(schema.GetAdditionalSchema(), doc),
+			}
+		}
+	}
+
+	// Handle items for array type
+	if schema.GetItems() != nil {
+		openAPISchema.Items = &base.DynamicValue[*base.SchemaProxy, bool]{
+			A: convertSchemaToOpenAPI(schema.GetItems(), doc),
+		}
+	}
+
+	// Handle composition keywords
+	if len(schema.GetAllOf()) > 0 {
+		openAPISchema.AllOf = make([]*base.SchemaProxy, len(schema.GetAllOf()))
+		for i, s := range schema.GetAllOf() {
+			openAPISchema.AllOf[i] = convertSchemaToOpenAPI(s, doc)
+		}
+	}
+	if len(schema.GetOneOf()) > 0 {
+		openAPISchema.OneOf = make([]*base.SchemaProxy, len(schema.GetOneOf()))
+		for i, s := range schema.GetOneOf() {
+			openAPISchema.OneOf[i] = convertSchemaToOpenAPI(s, doc)
+		}
+	}
+	if len(schema.GetAnyOf()) > 0 {
+		openAPISchema.AnyOf = make([]*base.SchemaProxy, len(schema.GetAnyOf()))
+		for i, s := range schema.GetAnyOf() {
+			openAPISchema.AnyOf[i] = convertSchemaToOpenAPI(s, doc)
+		}
+	}
+	if schema.GetNot() != nil {
+		openAPISchema.Not = convertSchemaToOpenAPI(schema.GetNot(), doc)
+	}
+
+	return base.CreateSchemaProxy(openAPISchema)
+}
+
+// convertServerToOpenAPI converts a protobuf Server to an OpenAPI Server
+func convertServerToOpenAPI(server *options.Server) *high.Server {
+	if server == nil {
+		return nil
+	}
+
+	openAPIServer := &high.Server{
+		URL:         server.GetUrl(),
+		Description: server.GetDescription(),
+	}
+
+	if len(server.GetVariables()) > 0 {
+		openAPIServer.Variables = orderedmap.New[string, *high.ServerVariable]()
+		for name, variable := range server.GetVariables() {
+			openAPIServer.Variables.Set(name, &high.ServerVariable{
+				Enum:        variable.GetEnum(),
+				Default:     variable.GetDefault(),
+				Description: variable.GetDescription(),
+			})
+		}
+	}
+
+	return openAPIServer
 }
