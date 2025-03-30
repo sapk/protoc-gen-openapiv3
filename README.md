@@ -19,6 +19,14 @@ This tool generates OpenAPI v3 (formerly known as Swagger) specifications from y
 - Drop-in replacement for protoc-gen-openapiv2
 - Maintains backward compatibility with existing proto files
 
+## Limitations
+
+The following features are not yet supported:
+- OpenAPI v3
+  - Webhooks
+  - OpenAPI v3JSON Schema Dialect
+- Full backward compatibility with grpc-gateway's protoc-gen-openapiv2 annotations
+
 ## Installation
 
 ```bash
