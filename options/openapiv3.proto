@@ -319,7 +319,7 @@ message Operation {
   repeated string produces = 4;
   repeated string consumes = 5;
   // TODO repeated Parameter parameters = 6;
-  repeated Response responses = 7;
+  map<string, Response> responses = 7;
   bool deprecated = 8;
   repeated SecurityRequirement security = 9;
   // TODO RequestBody request_body = 10;

@@ -96,8 +96,8 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 						Scopes:           orderedmap.New[string, string](),
 					}
 					// Add scopes
-					for key, value := range authCode.GetScopes() {
-						flows.AuthorizationCode.Scopes.Set(key, value)
+					for _, scope := range authCode.GetScopes() {
+						flows.AuthorizationCode.Scopes.Set(scope.GetName(), scope.GetDescription())
 					}
 				}
 
@@ -110,8 +110,8 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 						Scopes:           orderedmap.New[string, string](),
 					}
 					// Add scopes
-					for key, value := range implicit.GetScopes() {
-						flows.Implicit.Scopes.Set(key, value)
+					for _, scope := range implicit.GetScopes() {
+						flows.Implicit.Scopes.Set(scope.GetName(), scope.GetDescription())
 					}
 				}
 
@@ -124,8 +124,8 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 						Scopes:           orderedmap.New[string, string](),
 					}
 					// Add scopes
-					for key, value := range clientCreds.GetScopes() {
-						flows.ClientCredentials.Scopes.Set(key, value)
+					for _, scope := range clientCreds.GetScopes() {
+						flows.ClientCredentials.Scopes.Set(scope.GetName(), scope.GetDescription())
 					}
 				}
 
@@ -138,8 +138,8 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 						Scopes:           orderedmap.New[string, string](),
 					}
 					// Add scopes
-					for key, value := range password.GetScopes() {
-						flows.Password.Scopes.Set(key, value)
+					for _, scope := range password.GetScopes() {
+						flows.Password.Scopes.Set(scope.GetName(), scope.GetDescription())
 					}
 				}
 
