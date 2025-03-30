@@ -114,43 +114,37 @@ service UserService {
       summary: "GetUser retrieves a user by ID (override)"
       description: "Returns the full user details including profile information, status, and metadata. (override)"
       responses: {
-        key: "200"
-        value: {
-          description: "Successfully retrieved user details"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/User"
-              }
+        code: "200"
+        description: "Successfully retrieved user details"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/User"
             }
           }
         }
       }
       responses: {
-        key: "404"
-        value: {
-          description: "User not found"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "404"
+        description: "User not found"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
       }
       responses: {
-        key: "403"
-        value: {
-          description: "Insufficient permissions to access user"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "403"
+        description: "Insufficient permissions to access user"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
@@ -170,43 +164,37 @@ service UserService {
         scopes: ["read"]
       }
       responses: {
-        key: "200"
-        value: {
-          description: "Successfully retrieved list of users"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/ListUsersResponse"
-              }
+        code: "200"
+        description: "Successfully retrieved list of users"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/ListUsersResponse"
             }
           }
         }
       }
       responses: {
-        key: "400"
-        value: {
-          description: "Invalid request parameters"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "400"
+        description: "Invalid request parameters"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
       }
       responses: {
-        key: "403"
-        value: {
-          description: "Insufficient permissions to list users"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "403"
+        description: "Insufficient permissions to list users"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
@@ -227,57 +215,49 @@ service UserService {
         scopes: ["write"]
       }
       responses: {
-        key: "201"
-        value: {
-          description: "User successfully created"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/User"
-              }
+        code: "201"
+        description: "User successfully created"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/User"
             }
           }
         }
       }
       responses: {
-        key: "400"
-        value: {
-          description: "Invalid user data provided"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "400"
+        description: "Invalid user data provided"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
       }
       responses: {
-        key: "409"
-        value: {
-          description: "User with provided email already exists"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "409"
+        description: "User with provided email already exists"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
       }
       responses: {
-        key: "403"
-        value: {
-          description: "Insufficient permissions to create user"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "403"
+        description: "Insufficient permissions to create user"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
@@ -298,57 +278,49 @@ service UserService {
         scopes: ["write"]
       }
       responses: {
-        key: "200"
-        value: {
-          description: "User successfully updated"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/User"
-              }
+        code: "200"
+        description: "User successfully updated"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/User"
             }
           }
         }
       }
       responses: {
-        key: "400"
-        value: {
-          description: "Invalid user data provided"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "400"
+        description: "Invalid user data provided"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
       }
       responses: {
-        key: "404"
-        value: {
-          description: "User not found"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "404"
+        description: "User not found"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
       }
       responses: {
-        key: "403"
-        value: {
-          description: "Insufficient permissions to update user"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "403"
+        description: "Insufficient permissions to update user"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
@@ -369,57 +341,49 @@ service UserService {
         scopes: ["write"]
       }
       responses: {
-        key: "200"
-        value: {
-          description: "User successfully updated"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/User"
-              }
+        code: "200"
+        description: "User successfully updated"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/User"
             }
           }
         }
       }
       responses: {
-        key: "400"
-        value: {
-          description: "Invalid user data provided"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "400"
+        description: "Invalid user data provided"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
       }
       responses: {
-        key: "404"
-        value: {
-          description: "User not found"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "404"
+        description: "User not found"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
       }
       responses: {
-        key: "403"
-        value: {
-          description: "Insufficient permissions to update user"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "403"
+        description: "Insufficient permissions to update user"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
@@ -439,49 +403,41 @@ service UserService {
         scopes: ["admin"]
       }
       responses: {
-        key: "204"
-        value: {
-          description: "User successfully deleted"
-        }
+        code: "204"
+        description: "User successfully deleted"
       }
       responses: {
-        key: "404"
-        value: {
-          description: "User not found"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "404"
+        description: "User not found"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
       }
       responses: {
-        key: "403"
-        value: {
-          description: "Insufficient permissions to delete user"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "403"
+        description: "Insufficient permissions to delete user"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
       }
       responses: {
-        key: "409"
-        value: {
-          description: "User cannot be deleted due to existing dependencies"
-          content: {
-            key: "application/json"
-            value: {
-              schema: {
-                ref: "#/components/schemas/Error"
-              }
+        code: "409"
+        description: "User cannot be deleted due to existing dependencies"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
             }
           }
         }
