@@ -246,6 +246,56 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 				if method.Operation.GetDeprecated() {
 					operation.Deprecated = &method.Operation.Deprecated
 				}
+
+				// Convert parameters from operation annotation
+				if len(method.Parameters) > 0 {
+					operation.Parameters = make([]*high.Parameter, len(method.Parameters))
+					for i, param := range method.Parameters {
+						operation.Parameters[i] = &high.Parameter{
+							Name:            param.GetName(),
+							In:              param.GetIn(),
+							Description:     param.GetDescription(),
+							Required:        &param.Required,
+							Deprecated:      param.GetDeprecated(),
+							AllowEmptyValue: param.GetAllowEmptyValue(),
+							Style:           param.GetStyle(),
+							Explode:         &param.Explode,
+							AllowReserved:   param.GetAllowReserved(),
+							Schema:          convertSchemaToOpenAPI(param.GetSchema(), doc),
+						}
+
+						// Add example if present
+						if param.GetExample() != "" {
+							operation.Parameters[i].Example = &yaml.Node{
+								Kind:  yaml.ScalarNode,
+								Value: param.GetExample(),
+							}
+						}
+
+						// Add examples if present
+						if len(param.GetExamples()) > 0 {
+							operation.Parameters[i].Examples = orderedmap.New[string, *base.Example]()
+							for name, example := range param.GetExamples() {
+								operation.Parameters[i].Examples.Set(name, &base.Example{
+									Summary:       example.GetSummary(),
+									Description:   example.GetDescription(),
+									Value:         &yaml.Node{Value: example.GetValue()},
+									ExternalValue: example.GetExternalValue(),
+								})
+							}
+						}
+
+						// Add content if present
+						if len(param.GetContent()) > 0 {
+							operation.Parameters[i].Content = orderedmap.New[string, *high.MediaType]()
+							for mediaType, content := range param.GetContent() {
+								operation.Parameters[i].Content.Set(mediaType, &high.MediaType{
+									Schema: convertSchemaToOpenAPI(content.GetSchema(), doc),
+								})
+							}
+						}
+					}
+				}
 			}
 
 			// Set operation security requirements if present
