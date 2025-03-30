@@ -7,6 +7,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20250324211829-b45e905df463
 	google.golang.org/protobuf v1.36.6
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -17,5 +18,4 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/speakeasy-api/jsonpath v0.6.1 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.9-0.20240815153524-6ea36470d1bd // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
