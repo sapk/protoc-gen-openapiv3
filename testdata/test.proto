@@ -91,6 +91,34 @@ option (protoc_gen_openapiv3.options.security) = {
   name: "apiKey"
 };
 
+// Define tags for grouping operations
+option (protoc_gen_openapiv3.options.tag) = {
+  name: "users"
+  description: "User management operations including CRUD operations and user status management"
+  external_docs: {
+    description: "Find more information about user management"
+    url: "https://test.com/docs/users"
+  }
+};
+
+option (protoc_gen_openapiv3.options.tag) = {
+  name: "user-profile"
+  description: "Operations related to user profile management and updates"
+  external_docs: {
+    description: "Learn more about user profiles"
+    url: "https://test.com/docs/user-profiles"
+  }
+};
+
+option (protoc_gen_openapiv3.options.tag) = {
+  name: "user-status"
+  description: "Operations for managing user status and account state"
+  external_docs: {
+    description: "User status management documentation"
+    url: "https://test.com/docs/user-status"
+  }
+};
+
 // Error represents a standard API error response
 message Error {
   // A human-readable error message
