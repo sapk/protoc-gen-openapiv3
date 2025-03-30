@@ -298,17 +298,19 @@ message Link {
 
 // Response object describes a single response from an API operation
 message Response {
+  // REQUIRED. The HTTP status code for this response
+  string code = 1;
   // REQUIRED. A description of the response. CommonMark syntax MAY be used for rich text representation.
-  string description = 1;
+  string description = 2;
   // Maps a header name to its definition. RFC7230 states header names are case insensitive.
   // If a response header is defined with the name "Content-Type", it SHALL be ignored.
-  map<string, Header> headers = 2;
+  map<string, Header> headers = 3;
   // A map containing descriptions of potential response payloads.
   // The key is a media type or media type range and the value describes it.
-  map<string, MediaType> content = 3;
+  map<string, MediaType> content = 4;
   // A map of operations links that can be followed from the response.
   // The key of the map is a short name for the link.
-  map<string, Link> links = 4;
+  map<string, Link> links = 5;
 }
 
 // OpenAPI Operation object
@@ -319,7 +321,7 @@ message Operation {
   repeated string produces = 4;
   repeated string consumes = 5;
   // TODO repeated Parameter parameters = 6;
-  map<string, Response> responses = 7;
+  repeated Response responses = 7;
   bool deprecated = 8;
   repeated SecurityRequirement security = 9;
   // TODO RequestBody request_body = 10;
