@@ -200,6 +200,23 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 				Parameters: make([]*high.Parameter, 0),
 			}
 
+			// Set operation based on HTTP method
+			switch method.HTTPMethod {
+			case "GET":
+				pathItem.Get = operation
+			case "POST":
+				pathItem.Post = operation
+			case "PUT":
+				pathItem.Put = operation
+			case "PATCH":
+				pathItem.Patch = operation
+			case "DELETE":
+				pathItem.Delete = operation
+			default:
+				// Default to POST if no HTTP method is specified
+				pathItem.Post = operation
+			}
+
 			// Set operation annotation
 			if method.Operation != nil {
 				if method.Operation.GetSummary() != "" {
@@ -291,31 +308,61 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 				}
 			}
 
-			// Set operation based on HTTP method
-			switch method.HTTPMethod {
-			case "GET":
-				pathItem.Get = operation
-			case "POST":
-				pathItem.Post = operation
-			case "PUT":
-				pathItem.Put = operation
-			case "PATCH":
-				pathItem.Patch = operation
-			case "DELETE":
-				pathItem.Delete = operation
-			default:
-				// Default to POST if no HTTP method is specified
-				pathItem.Post = operation
+			// Add request body if specified
+			if method.RequestBody != nil {
+				operation.RequestBody = &high.RequestBody{
+					Description: method.RequestBody.GetDescription(),
+					Content:     orderedmap.New[string, *high.MediaType](),
+					Required:    &method.RequestBody.Required,
+				}
+
+				// Add content from request body
+				for mediaType, content := range method.RequestBody.GetContent() {
+					mediaTypeObj := &high.MediaType{
+						Schema: convertSchemaToOpenAPI(content.GetSchema(), doc),
+					}
+
+					// Add examples if present
+					if len(content.GetExamples()) > 0 {
+						mediaTypeObj.Examples = orderedmap.New[string, *base.Example]()
+						for name, example := range content.GetExamples() {
+							mediaTypeObj.Examples.Set(name, &base.Example{
+								Summary:       example.GetSummary(),
+								Description:   example.GetDescription(),
+								Value:         &yaml.Node{Value: example.GetValue()},
+								ExternalValue: example.GetExternalValue(),
+							})
+						}
+					}
+
+					// Add encoding if present
+					if len(content.GetEncoding()) > 0 {
+						mediaTypeObj.Encoding = orderedmap.New[string, *high.Encoding]()
+						for name, encoding := range content.GetEncoding() {
+							mediaTypeObj.Encoding.Set(name, &high.Encoding{
+								ContentType:   encoding.GetContentType(),
+								Style:         encoding.GetStyle(),
+								Explode:       &encoding.Explode,
+								AllowReserved: encoding.GetAllowReserved(),
+							})
+						}
+					}
+
+					operation.RequestBody.Content.Set(mediaType, mediaTypeObj)
+				}
 			}
 
-			// Add request body if specified
-			if method.HTTPBody != "" {
-				operation.RequestBody = &high.RequestBody{
-					Content: orderedmap.New[string, *high.MediaType](),
+			if method.HTTPBody != "" { //handle generic google.http body
+				if operation.RequestBody == nil {
+					operation.RequestBody = &high.RequestBody{
+						Content: orderedmap.New[string, *high.MediaType](),
+					}
 				}
-				operation.RequestBody.Content.Set("application/json", &high.MediaType{
-					Schema: convertMessageToSchema(parsedFile, method.InputType, doc),
-				})
+				if _, has := operation.RequestBody.Content.Get("application/json"); !has {
+					operation.RequestBody.Content.Set("application/json", &high.MediaType{
+						Schema: convertMessageToSchema(parsedFile, method.InputType, doc),
+					})
+				}
 			}
 
 			// Add responses from method's Responses field

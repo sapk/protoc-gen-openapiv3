@@ -238,7 +238,7 @@ func (g *OpenAPIGenerator) parseMethod(method *protogen.Method) (ParsedMethod, e
 			if ok {
 				parsed.Operation = operation
 				// Parse security requirements if present
-				parsed.Security = operation.GetSecurity(
+				parsed.Security = operation.GetSecurity()
 				// Parse responses
 				parsed.Responses = operation.GetResponses()
 				// Parse request body if present
