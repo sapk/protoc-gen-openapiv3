@@ -167,22 +167,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 	if len(parsedFile.Servers) > 0 {
 		doc.Servers = make([]*high.Server, len(parsedFile.Servers))
 		for i, server := range parsedFile.Servers {
-			doc.Servers[i] = &high.Server{
-				URL:         server.GetUrl(),
-				Description: server.GetDescription(),
-			}
-
-			// Handle Server Variables if present
-			if len(server.GetVariables()) > 0 {
-				doc.Servers[i].Variables = orderedmap.New[string, *high.ServerVariable]()
-				for name, variable := range server.GetVariables() {
-					doc.Servers[i].Variables.Set(name, &high.ServerVariable{
-						Enum:        variable.GetEnum(),
-						Default:     variable.GetDefault(),
-						Description: variable.GetDescription(),
-					})
-				}
-			}
+			doc.Servers[i] = convertServerToOpenAPI(server)
 		}
 	}
 
@@ -344,9 +329,26 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 					if len(resp.GetContent()) > 0 {
 						response.Content = orderedmap.New[string, *high.MediaType]()
 						for mediaType, content := range resp.GetContent() {
-							response.Content.Set(mediaType, &high.MediaType{
-								Schema: convertSchemaToOpenAPI(content.GetSchema(), doc),
-							})
+							// Convert schema and ensure it's added to components
+							schema := content.GetSchema()
+							if schema != nil {
+								// If the schema has a reference, ensure the referenced message is added to components
+								if schema.GetRef() != "" {
+									refName := strings.TrimPrefix(schema.GetRef(), "#/components/schemas/")
+									// Find the referenced message
+									for _, msg := range parsedFile.Messages {
+										if msg.Name == refName {
+											// Convert the message to schema and add it to components
+											msgSchema := convertMessageToSchema(parsedFile, msg.Name, doc)
+											doc.Components.Schemas.Set(refName, msgSchema)
+											break
+										}
+									}
+								}
+								response.Content.Set(mediaType, &high.MediaType{
+									Schema: convertSchemaToOpenAPI(schema, doc),
+								})
+							}
 						}
 					}
 
