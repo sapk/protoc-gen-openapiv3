@@ -52,6 +52,73 @@ message Server {
   map<string, ServerVariable> variables = 3;
 }
 
+// OAuth2 Flow object
+message OAuth2Flow {
+  // The authorization URL to be used for this flow.
+  string authorization_url = 1;
+  // The token URL to be used for this flow.
+  string token_url = 2;
+  // The URL to be used for obtaining refresh tokens.
+  string refresh_url = 3;
+  // The available scopes for the OAuth2 security scheme.
+  map<string, string> scopes = 4;
+}
+
+// OAuth2 Flows object
+message OAuth2Flows {
+  // Configuration for the OAuth2 Implicit flow
+  OAuth2Flow implicit = 1;
+  // Configuration for the OAuth2 Authorization Code flow
+  OAuth2Flow authorization_code = 2;
+  // Configuration for the OAuth2 Client Credentials flow
+  OAuth2Flow client_credentials = 3;
+  // Configuration for the OAuth2 Password flow
+  OAuth2Flow password = 4;
+}
+
+// Security Scheme object
+message SecurityScheme {
+  // The type of the security scheme.
+  enum Type {
+    TYPE_UNSPECIFIED = 0;
+    TYPE_API_KEY = 1;
+    TYPE_HTTP = 2;
+    TYPE_MUTUAL_TLS = 3;
+    TYPE_OAUTH2 = 4;
+    TYPE_OPENID_CONNECT = 5;
+  }
+
+  // The type of the security scheme.
+  Type type = 1;
+  // A description for security scheme.
+  string description = 2;
+  // The name of the header, query or cookie parameter to be used.
+  string name = 3;
+  // The location of the API key.
+  enum In {
+    IN_UNSPECIFIED = 0;
+    IN_QUERY = 1;
+    IN_HEADER = 2;
+    IN_COOKIE = 3;
+  }
+  In in = 4;
+  // The name of the HTTP Authentication scheme.
+  string scheme = 5;
+  // A hint to the client to identify how the bearer token is formatted.
+  string bearer_format = 6;
+  // An object containing configuration information for the flow types supported.
+  OAuth2Flows flows = 7;
+  // Well-known URL to discover the OpenID Connect provider metadata.
+  string open_id_connect_url = 8;
+}
+
+// Security Requirement object
+message SecurityRequirement {
+  // The name of the security scheme.
+  string name = 1;
+  // The scopes required for the security scheme.
+  repeated string scopes = 2;
+}
 
 // OpenAPI Operation object
 message Operation {
@@ -63,6 +130,6 @@ message Operation {
   // TODO repeated Parameter parameters = 6;
   // TODO repeated Response responses = 7;
   bool deprecated = 8;
-  repeated string security = 9;
+  repeated SecurityRequirement security = 9;
   // TODO RequestBody request_body = 10;
 }
