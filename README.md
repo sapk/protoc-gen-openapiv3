@@ -10,7 +10,12 @@ This tool generates OpenAPI v3 (formerly known as Swagger) specifications from y
 
 - Generates OpenAPI v3 specifications from Protocol Buffer files
 - Compatible with existing grpc-gateway annotations
-- Supports all OpenAPI v3 features
+- Supports OpenAPI v3 features including:
+  - Response schemas and references
+  - Security schemes (OAuth2, API Key, HTTP)
+  - Server configurations
+  - Request/Response content types
+  - Schema components and references
 - Drop-in replacement for protoc-gen-openapiv2
 - Maintains backward compatibility with existing proto files
 
@@ -30,11 +35,63 @@ syntax = "proto3";
 package your.package;
 
 import "google/api/annotations.proto";
+import "options/annotations.proto";
+
+// Define API information
+option (protoc_gen_openapiv3.options.info) = {
+  title: "Your API"
+  description: "API description"
+  version: "1.0.0"
+};
+
+// Define security schemes
+option (protoc_gen_openapiv3.options.securityScheme) = {
+  type: "oauth2"
+  description: "OAuth2 authentication"
+  flows: {
+    authorization_code: {
+      authorization_url: "https://auth.example.com/oauth/authorize"
+      token_url: "https://auth.example.com/oauth/token"
+      scopes: {
+        name: "read"
+        description: "Read access"
+      }
+    }
+  }
+};
 
 service YourService {
   rpc YourMethod(YourRequest) returns (YourResponse) {
     option (google.api.http) = {
       get: "/v1/your-method"
+    };
+    option (protoc_gen_openapiv3.options.operation) = {
+      summary: "Get something"
+      description: "Detailed description"
+      responses: {
+        code: "200"
+        description: "Success"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/YourResponse"
+            }
+          }
+        }
+      }
+      responses: {
+        code: "400"
+        description: "Bad Request"
+        content: {
+          key: "application/json"
+          value: {
+            schema: {
+              ref: "#/components/schemas/Error"
+            }
+          }
+        }
+      }
     };
   }
 }
@@ -43,7 +100,7 @@ service YourService {
 2. Generate the OpenAPI specification:
 
 ```bash
-go build -o protoc-gen-openapiv3 && protoc --plugin=protoc-gen-openapiv3=./protoc-gen-openapiv3   --openapiv3_out=output=./testdata/test.openapi.yaml,output-format=yaml:. --proto_path=./testdata --proto_path=./ ./testdata/test.prot
+go build -o protoc-gen-openapiv3 && protoc --plugin=protoc-gen-openapiv3=./protoc-gen-openapiv3   --openapiv3_out=output=./testdata/test.openapi.yaml,output-format=yaml:. --proto_path=./testdata --proto_path=./ ./testdata/test.proto
 ```
 
 ## Configuration
@@ -60,6 +117,15 @@ Example with options:
 ```bash
 go build -o protoc-gen-openapiv3 && protoc --openapiv3_out=output=./testdata/test.openapi.json,output-format=json,allow_merge=true,include_package_in_tags=true:. --plugin=protoc-gen-openapiv3=./protoc-gen-openapiv3 --proto_path=./testdata --proto_path=./ ./testdata/test.proto 
 ```
+
+## Schema Handling
+
+The generator automatically handles schema references and components:
+
+- All message types used in requests and responses are automatically added to the components section
+- Response schemas that reference message types (like error responses) are properly included
+- Schema references are resolved and the corresponding components are generated
+- Support for primitive types, arrays, maps, and nested objects
 
 ## Contributing
 
