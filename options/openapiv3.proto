@@ -52,6 +52,12 @@ message Server {
   map<string, ServerVariable> variables = 3;
 }
 
+// OAuth2 Scope object
+message OAuth2Scope {
+  string name = 1;
+  string description = 2;
+}
+
 // OAuth2 Flow object
 message OAuth2Flow {
   // The authorization URL to be used for this flow.
@@ -61,7 +67,7 @@ message OAuth2Flow {
   // The URL to be used for obtaining refresh tokens.
   string refresh_url = 3;
   // The available scopes for the OAuth2 security scheme.
-  map<string, string> scopes = 4;
+  repeated OAuth2Scope scopes = 4;
 }
 
 // OAuth2 Flows object
