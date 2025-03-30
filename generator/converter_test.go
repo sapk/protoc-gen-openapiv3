@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/sapk/protoc-gen-openapiv3/generator"
+	"github.com/sapk/protoc-gen-openapiv3/options"
 )
 
 func TestConvertToOpenAPI(t *testing.T) {
@@ -22,6 +23,9 @@ func TestConvertToOpenAPI(t *testing.T) {
 						OutputType: "test.package.User",
 						HTTPMethod: "GET",
 						HTTPPath:   "/v1/users/{user_id}",
+						Operation: &options.Operation{
+							Summary: "GetUser operation",
+						},
 					},
 					{
 						Name:       "CreateUser",
@@ -30,6 +34,9 @@ func TestConvertToOpenAPI(t *testing.T) {
 						HTTPMethod: "POST",
 						HTTPPath:   "/v1/users",
 						HTTPBody:   "user",
+						Operation: &options.Operation{
+							Summary: "CreateUser operation",
+						},
 					},
 					{
 						Name:       "UpdateUser",
@@ -38,6 +45,9 @@ func TestConvertToOpenAPI(t *testing.T) {
 						HTTPMethod: "PUT",
 						HTTPPath:   "/v1/users/{user_id}",
 						HTTPBody:   "user",
+						Operation: &options.Operation{
+							Summary: "UpdateUser operation",
+						},
 					},
 					{
 						Name:       "PatchUser",
@@ -46,6 +56,9 @@ func TestConvertToOpenAPI(t *testing.T) {
 						HTTPMethod: "PATCH",
 						HTTPPath:   "/v1/users/{user_id}",
 						HTTPBody:   "user",
+						Operation: &options.Operation{
+							Summary: "PatchUser operation",
+						},
 					},
 					{
 						Name:       "DeleteUser",
@@ -53,6 +66,9 @@ func TestConvertToOpenAPI(t *testing.T) {
 						OutputType: "google.protobuf.Empty",
 						HTTPMethod: "DELETE",
 						HTTPPath:   "/v1/users/{user_id}",
+						Operation: &options.Operation{
+							Summary: "DeleteUser operation",
+						},
 					},
 				},
 			},
