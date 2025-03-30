@@ -45,6 +45,7 @@ type ParsedMethod struct {
 	Operation   *options.Operation
 	Security    []*options.SecurityRequirement
 	Responses   []*options.Response
+	RequestBody *options.RequestBody
 }
 
 // ParsedMessage represents a parsed message definition
@@ -237,11 +238,11 @@ func (g *OpenAPIGenerator) parseMethod(method *protogen.Method) (ParsedMethod, e
 			if ok {
 				parsed.Operation = operation
 				// Parse security requirements if present
-				if len(operation.GetSecurity()) > 0 {
-					parsed.Security = operation.GetSecurity()
-				}
+				parsed.Security = operation.GetSecurity(
 				// Parse responses
 				parsed.Responses = operation.GetResponses()
+				// Parse request body if present
+				parsed.RequestBody = operation.GetRequestBody()
 			}
 		}
 	}
