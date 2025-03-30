@@ -340,6 +340,20 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 						Schema: convertSchemaToOpenAPI(content.GetSchema(), doc),
 					}
 
+					// If the schema has a reference, ensure the referenced message is added to components
+					if content.GetSchema() != nil && content.GetSchema().GetRef() != "" {
+						refName := strings.TrimPrefix(content.GetSchema().GetRef(), "#/components/schemas/")
+						// Find the referenced message
+						for _, msg := range parsedFile.Messages {
+							if msg.Name == refName {
+								// Convert the message to schema and add it to components
+								msgSchema := convertMessageToSchema(parsedFile, msg.Name, doc)
+								doc.Components.Schemas.Set(refName, msgSchema)
+								break
+							}
+						}
+					}
+
 					// Add examples if present
 					if len(content.GetExamples()) > 0 {
 						mediaTypeObj.Examples = orderedmap.New[string, *base.Example]()
