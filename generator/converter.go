@@ -38,7 +38,8 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 			PathItems: orderedmap.New[string, *high.PathItem](),
 		},
 		Components: &high.Components{
-			Schemas: orderedmap.New[string, *base.SchemaProxy](),
+			Schemas:         orderedmap.New[string, *base.SchemaProxy](),
+			SecuritySchemes: orderedmap.New[string, *high.SecurityScheme](),
 		},
 	}
 
@@ -66,6 +67,98 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 				Name: parsedFile.Info.License.GetName(),
 				URL:  parsedFile.Info.License.GetUrl(),
 			}
+		}
+	}
+
+	// Convert Security Schemes if present
+	if len(parsedFile.SecuritySchemes) > 0 {
+		for _, scheme := range parsedFile.SecuritySchemes {
+			securityScheme := &high.SecurityScheme{
+				Type:             scheme.GetType(),
+				Description:      scheme.GetDescription(),
+				Name:             scheme.GetName(),
+				In:               scheme.GetIn(),
+				Scheme:           scheme.GetScheme(),
+				BearerFormat:     scheme.GetBearerFormat(),
+				OpenIdConnectUrl: scheme.GetOpenIdConnectUrl(),
+			}
+
+			// Handle OAuth2 flows if present
+			if scheme.GetFlows() != nil {
+				flows := &high.OAuthFlows{}
+
+				// Handle Authorization Code flow
+				if authCode := scheme.GetFlows().GetAuthorizationCode(); authCode != nil {
+					flows.AuthorizationCode = &high.OAuthFlow{
+						AuthorizationUrl: authCode.GetAuthorizationUrl(),
+						TokenUrl:         authCode.GetTokenUrl(),
+						RefreshUrl:       authCode.GetRefreshUrl(),
+						Scopes:           orderedmap.New[string, string](),
+					}
+					// Add scopes
+					for key, value := range authCode.GetScopes() {
+						flows.AuthorizationCode.Scopes.Set(key, value)
+					}
+				}
+
+				// Handle Implicit flow
+				if implicit := scheme.GetFlows().GetImplicit(); implicit != nil {
+					flows.Implicit = &high.OAuthFlow{
+						AuthorizationUrl: implicit.GetAuthorizationUrl(),
+						TokenUrl:         implicit.GetTokenUrl(),
+						RefreshUrl:       implicit.GetRefreshUrl(),
+						Scopes:           orderedmap.New[string, string](),
+					}
+					// Add scopes
+					for key, value := range implicit.GetScopes() {
+						flows.Implicit.Scopes.Set(key, value)
+					}
+				}
+
+				// Handle Client Credentials flow
+				if clientCreds := scheme.GetFlows().GetClientCredentials(); clientCreds != nil {
+					flows.ClientCredentials = &high.OAuthFlow{
+						AuthorizationUrl: clientCreds.GetAuthorizationUrl(),
+						TokenUrl:         clientCreds.GetTokenUrl(),
+						RefreshUrl:       clientCreds.GetRefreshUrl(),
+						Scopes:           orderedmap.New[string, string](),
+					}
+					// Add scopes
+					for key, value := range clientCreds.GetScopes() {
+						flows.ClientCredentials.Scopes.Set(key, value)
+					}
+				}
+
+				// Handle Password flow
+				if password := scheme.GetFlows().GetPassword(); password != nil {
+					flows.Password = &high.OAuthFlow{
+						AuthorizationUrl: password.GetAuthorizationUrl(),
+						TokenUrl:         password.GetTokenUrl(),
+						RefreshUrl:       password.GetRefreshUrl(),
+						Scopes:           orderedmap.New[string, string](),
+					}
+					// Add scopes
+					for key, value := range password.GetScopes() {
+						flows.Password.Scopes.Set(key, value)
+					}
+				}
+
+				securityScheme.Flows = flows
+			}
+
+			// Add the security scheme to components
+			doc.Components.SecuritySchemes.Set(scheme.GetType(), securityScheme)
+		}
+	}
+
+	// Set global security requirements if present
+	if len(parsedFile.Security) > 0 {
+		doc.Security = make([]*base.SecurityRequirement, len(parsedFile.Security))
+		for i, req := range parsedFile.Security {
+			doc.Security[i] = &base.SecurityRequirement{
+				Requirements: orderedmap.New[string, []string](),
+			}
+			doc.Security[i].Requirements.Set(req.GetName(), req.GetScopes())
 		}
 	}
 

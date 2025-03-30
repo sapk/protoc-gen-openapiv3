@@ -12,14 +12,16 @@ import (
 
 // ParsedFile represents the parsed proto file with all necessary information
 type ParsedFile struct {
-	Package     string
-	Services    []ParsedService
-	Messages    []ParsedMessage
-	Enums       []ParsedEnum
-	Imports     []string
-	Annotations map[string]string
-	Info        *options.Info
-	Servers     []*options.Server
+	Package         string
+	Services        []ParsedService
+	Messages        []ParsedMessage
+	Enums           []ParsedEnum
+	Imports         []string
+	Annotations     map[string]string
+	Info            *options.Info
+	Servers         []*options.Server
+	SecuritySchemes []*options.SecurityScheme
+	Security        []*options.SecurityRequirement
 }
 
 // ParsedService represents a parsed service definition
@@ -78,13 +80,15 @@ type ParsedEnumValue struct {
 // ParseProtoFile parses a proto file and extracts all necessary information
 func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, error) {
 	parsed := &ParsedFile{
-		Package:     string(file.Desc.Package()),
-		Annotations: make(map[string]string),
-		Services:    make([]ParsedService, 0),
-		Messages:    make([]ParsedMessage, 0),
-		Enums:       make([]ParsedEnum, 0),
-		Imports:     make([]string, 0),
-		Servers:     make([]*options.Server, 0),
+		Package:         string(file.Desc.Package()),
+		Annotations:     make(map[string]string),
+		Services:        make([]ParsedService, 0),
+		Messages:        make([]ParsedMessage, 0),
+		Enums:           make([]ParsedEnum, 0),
+		Imports:         make([]string, 0),
+		Servers:         make([]*options.Server, 0),
+		SecuritySchemes: make([]*options.SecurityScheme, 0),
+		Security:        make([]*options.SecurityRequirement, 0),
 	}
 
 	// Parse imports
@@ -110,6 +114,24 @@ func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, err
 			servers, ok := serversExt.([]*options.Server)
 			if ok {
 				parsed.Servers = servers
+			}
+		}
+
+		// Parse OpenAPI SecurityScheme options
+		securitySchemeExt := proto.GetExtension(file.Desc.Options(), options.E_SecurityScheme)
+		if securitySchemeExt != nil {
+			schemes, ok := securitySchemeExt.([]*options.SecurityScheme)
+			if ok {
+				parsed.SecuritySchemes = schemes
+			}
+		}
+
+		// Parse OpenAPI Security options
+		securityExt := proto.GetExtension(file.Desc.Options(), options.E_Security)
+		if securityExt != nil {
+			security, ok := securityExt.([]*options.SecurityRequirement)
+			if ok {
+				parsed.Security = security
 			}
 		}
 	}
