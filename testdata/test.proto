@@ -248,7 +248,7 @@ service UserService {
           key: "application/json"
           value: {
             schema: {
-              ref: "#/components/schemas/User"
+              ref: "#/components/schemas/CreateUserRequest"
             }
             examples: {
               key: "user"

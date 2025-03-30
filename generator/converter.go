@@ -42,6 +42,24 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 			Schemas:         orderedmap.New[string, *base.SchemaProxy](),
 			SecuritySchemes: orderedmap.New[string, *high.SecurityScheme](),
 		},
+		Tags: make([]*base.Tag, 0),
+	}
+
+	// Convert Tags if present
+	if len(parsedFile.Tags) > 0 {
+		doc.Tags = make([]*base.Tag, len(parsedFile.Tags))
+		for i, tag := range parsedFile.Tags {
+			doc.Tags[i] = &base.Tag{
+				Name:        tag.GetName(),
+				Description: tag.GetDescription(),
+			}
+			if tag.GetExternalDocs() != nil {
+				doc.Tags[i].ExternalDocs = &base.ExternalDoc{
+					Description: tag.GetExternalDocs().GetDescription(),
+					URL:         tag.GetExternalDocs().GetUrl(),
+				}
+			}
+		}
 	}
 
 	// Convert Info object if present

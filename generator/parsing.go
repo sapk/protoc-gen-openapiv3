@@ -22,6 +22,7 @@ type ParsedFile struct {
 	Servers         []*options.Server
 	SecuritySchemes []*options.SecurityScheme
 	Security        []*options.SecurityRequirement
+	Tags            []*options.Tag
 }
 
 // ParsedService represents a parsed service definition
@@ -92,6 +93,7 @@ func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, err
 		Servers:         make([]*options.Server, 0),
 		SecuritySchemes: make([]*options.SecurityScheme, 0),
 		Security:        make([]*options.SecurityRequirement, 0),
+		Tags:            make([]*options.Tag, 0),
 	}
 
 	// Parse imports
@@ -135,6 +137,15 @@ func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, err
 			security, ok := securityExt.([]*options.SecurityRequirement)
 			if ok {
 				parsed.Security = security
+			}
+		}
+
+		// Parse OpenAPI Tag options
+		tagsExt := proto.GetExtension(file.Desc.Options(), options.E_Tag)
+		if tagsExt != nil {
+			tags, ok := tagsExt.([]*options.Tag)
+			if ok {
+				parsed.Tags = tags
 			}
 		}
 	}
