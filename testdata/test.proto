@@ -195,17 +195,24 @@ service UserService {
         schema: {
           type: "object"
           properties: {
-            status: {
+            key: "status"
+            value: {
               type: "string"
               enum: ["USER_STATUS_ACTIVE", "USER_STATUS_INACTIVE", "USER_STATUS_SUSPENDED"]
             }
-            roles: {
+          }
+          properties: {
+            key: "roles"
+            value: {
               type: "array"
               items: {
                 type: "string"
               }
             }
-            created_after: {
+          }
+          properties: {
+            key: "created_after"
+            value: {
               type: "string"
               format: "date-time"
             }
