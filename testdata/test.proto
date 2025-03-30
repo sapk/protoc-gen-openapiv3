@@ -51,9 +51,16 @@ option (protoc_gen_openapiv3.options.securityScheme) = {
       token_url: "https://auth.test.com/oauth/token"
       refresh_url: "https://auth.test.com/oauth/refresh"
       scopes: {
-        "read": "Read access to user data"
-        "write": "Write access to user data"
-        "admin": "Administrative access"
+        key: "read"
+        value: "Read access to user data"
+      }
+      scopes: {
+        key: "write"
+        value: "Write access to user data"
+      }
+      scopes: {
+        key: "admin"
+        value: "Administrative access"
       }
     }
   }
@@ -96,10 +103,6 @@ service UserService {
     option (protoc_gen_openapiv3.options.operation) = {
       summary: "GetUser retrieves a user by ID (override)"
       description: "Returns the full user details including profile information, status, and metadata. (override)"
-      security: {
-        name: "oauth2"
-        scopes: ["read"]
-      }
     }; 
   }
 
