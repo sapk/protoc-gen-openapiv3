@@ -1956,6 +1956,73 @@ func (x *RequestBody) GetRequired() bool {
 	return false
 }
 
+// Tag object represents metadata for a single tag used by the Operation Object
+type Tag struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// REQUIRED. The name of the tag.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// A description for the tag. CommonMark syntax MAY be used for rich text representation.
+	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	// Additional external documentation for this tag.
+	ExternalDocs *ExternalDocumentation `protobuf:"bytes,3,opt,name=external_docs,json=externalDocs,proto3" json:"external_docs,omitempty"`
+}
+
+func (x *Tag) Reset() {
+	*x = Tag{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_options_openapiv3_proto_msgTypes[21]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Tag) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Tag) ProtoMessage() {}
+
+func (x *Tag) ProtoReflect() protoreflect.Message {
+	mi := &file_options_openapiv3_proto_msgTypes[21]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Tag.ProtoReflect.Descriptor instead.
+func (*Tag) Descriptor() ([]byte, []int) {
+	return file_options_openapiv3_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *Tag) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Tag) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *Tag) GetExternalDocs() *ExternalDocumentation {
+	if x != nil {
+		return x.ExternalDocs
+	}
+	return nil
+}
+
 // OpenAPI Operation object
 type Operation struct {
 	state         protoimpl.MessageState
@@ -1977,7 +2044,7 @@ type Operation struct {
 func (x *Operation) Reset() {
 	*x = Operation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_options_openapiv3_proto_msgTypes[21]
+		mi := &file_options_openapiv3_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1990,7 +2057,7 @@ func (x *Operation) String() string {
 func (*Operation) ProtoMessage() {}
 
 func (x *Operation) ProtoReflect() protoreflect.Message {
-	mi := &file_options_openapiv3_proto_msgTypes[21]
+	mi := &file_options_openapiv3_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2003,7 +2070,7 @@ func (x *Operation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Operation.ProtoReflect.Descriptor instead.
 func (*Operation) Descriptor() ([]byte, []int) {
-	return file_options_openapiv3_proto_rawDescGZIP(), []int{21}
+	return file_options_openapiv3_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *Operation) GetSummary() string {
@@ -2479,36 +2546,45 @@ var file_options_openapiv3_proto_rawDesc = []byte{
 	0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x5f, 0x67, 0x65, 0x6e,
 	0x5f, 0x6f, 0x70, 0x65, 0x6e, 0x61, 0x70, 0x69, 0x76, 0x33, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f,
 	0x6e, 0x73, 0x2e, 0x4d, 0x65, 0x64, 0x69, 0x61, 0x54, 0x79, 0x70, 0x65, 0x52, 0x05, 0x76, 0x61,
-	0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x96, 0x03, 0x0a, 0x09, 0x4f, 0x70, 0x65, 0x72,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x73, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x12,
-	0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f,
-	0x6e, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x61, 0x67, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52,
-	0x04, 0x74, 0x61, 0x67, 0x73, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x65,
-	0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x52, 0x08, 0x70, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x65,
-	0x73, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x6f, 0x6e, 0x73, 0x75, 0x6d, 0x65, 0x73, 0x18, 0x05, 0x20,
-	0x03, 0x28, 0x09, 0x52, 0x08, 0x63, 0x6f, 0x6e, 0x73, 0x75, 0x6d, 0x65, 0x73, 0x12, 0x44, 0x0a,
-	0x09, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x73, 0x18, 0x07, 0x20, 0x03, 0x28, 0x0b,
-	0x32, 0x26, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x5f, 0x67, 0x65, 0x6e, 0x5f, 0x6f, 0x70,
-	0x65, 0x6e, 0x61, 0x70, 0x69, 0x76, 0x33, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x52, 0x09, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x73, 0x12, 0x1e, 0x0a, 0x0a, 0x64, 0x65, 0x70, 0x72, 0x65, 0x63, 0x61, 0x74, 0x65,
-	0x64, 0x18, 0x08, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0a, 0x64, 0x65, 0x70, 0x72, 0x65, 0x63, 0x61,
-	0x74, 0x65, 0x64, 0x12, 0x4d, 0x0a, 0x08, 0x73, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x18,
-	0x09, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x31, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x5f, 0x67,
-	0x65, 0x6e, 0x5f, 0x6f, 0x70, 0x65, 0x6e, 0x61, 0x70, 0x69, 0x76, 0x33, 0x2e, 0x6f, 0x70, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x53, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x52, 0x65, 0x71,
-	0x75, 0x69, 0x72, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x08, 0x73, 0x65, 0x63, 0x75, 0x72, 0x69,
-	0x74, 0x79, 0x12, 0x4c, 0x0a, 0x0c, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x62, 0x6f,
-	0x64, 0x79, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x95, 0x01, 0x0a, 0x03, 0x54, 0x61, 0x67, 0x12,
+	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69,
+	0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69,
+	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x58, 0x0a, 0x0d, 0x65, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61,
+	0x6c, 0x5f, 0x64, 0x6f, 0x63, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x33, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x5f, 0x67, 0x65, 0x6e, 0x5f, 0x6f, 0x70, 0x65, 0x6e, 0x61, 0x70,
+	0x69, 0x76, 0x33, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x45, 0x78, 0x74, 0x65,
+	0x72, 0x6e, 0x61, 0x6c, 0x44, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x52, 0x0c, 0x65, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x44, 0x6f, 0x63, 0x73, 0x22,
+	0x96, 0x03, 0x0a, 0x09, 0x4f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x18, 0x0a,
+	0x07, 0x73, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
+	0x73, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72,
+	0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65,
+	0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x61, 0x67,
+	0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x04, 0x74, 0x61, 0x67, 0x73, 0x12, 0x1a, 0x0a,
+	0x08, 0x70, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x65, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x52,
+	0x08, 0x70, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x65, 0x73, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x6f, 0x6e,
+	0x73, 0x75, 0x6d, 0x65, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x09, 0x52, 0x08, 0x63, 0x6f, 0x6e,
+	0x73, 0x75, 0x6d, 0x65, 0x73, 0x12, 0x44, 0x0a, 0x09, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x73, 0x18, 0x07, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x26, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x63, 0x5f, 0x67, 0x65, 0x6e, 0x5f, 0x6f, 0x70, 0x65, 0x6e, 0x61, 0x70, 0x69, 0x76, 0x33, 0x2e,
-	0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x42,
-	0x6f, 0x64, 0x79, 0x52, 0x0b, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x42, 0x6f, 0x64, 0x79,
-	0x42, 0x2e, 0x5a, 0x2c, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73,
-	0x61, 0x70, 0x6b, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x2d, 0x67, 0x65, 0x6e, 0x2d, 0x6f,
-	0x70, 0x65, 0x6e, 0x61, 0x70, 0x69, 0x76, 0x33, 0x2f, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x52, 0x09, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x73, 0x12, 0x1e, 0x0a, 0x0a, 0x64,
+	0x65, 0x70, 0x72, 0x65, 0x63, 0x61, 0x74, 0x65, 0x64, 0x18, 0x08, 0x20, 0x01, 0x28, 0x08, 0x52,
+	0x0a, 0x64, 0x65, 0x70, 0x72, 0x65, 0x63, 0x61, 0x74, 0x65, 0x64, 0x12, 0x4d, 0x0a, 0x08, 0x73,
+	0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x18, 0x09, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x31, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x5f, 0x67, 0x65, 0x6e, 0x5f, 0x6f, 0x70, 0x65, 0x6e, 0x61,
+	0x70, 0x69, 0x76, 0x33, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x53, 0x65, 0x63,
+	0x75, 0x72, 0x69, 0x74, 0x79, 0x52, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x6d, 0x65, 0x6e, 0x74,
+	0x52, 0x08, 0x73, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x12, 0x4c, 0x0a, 0x0c, 0x72, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x62, 0x6f, 0x64, 0x79, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x29, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x5f, 0x67, 0x65, 0x6e, 0x5f, 0x6f, 0x70,
+	0x65, 0x6e, 0x61, 0x70, 0x69, 0x76, 0x33, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x42, 0x6f, 0x64, 0x79, 0x52, 0x0b, 0x72, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x42, 0x6f, 0x64, 0x79, 0x42, 0x2e, 0x5a, 0x2c, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x61, 0x70, 0x6b, 0x2f, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x63, 0x2d, 0x67, 0x65, 0x6e, 0x2d, 0x6f, 0x70, 0x65, 0x6e, 0x61, 0x70, 0x69, 0x76, 0x33,
+	0x2f, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2523,7 +2599,7 @@ func file_options_openapiv3_proto_rawDescGZIP() []byte {
 	return file_options_openapiv3_proto_rawDescData
 }
 
-var file_options_openapiv3_proto_msgTypes = make([]protoimpl.MessageInfo, 35)
+var file_options_openapiv3_proto_msgTypes = make([]protoimpl.MessageInfo, 36)
 var file_options_openapiv3_proto_goTypes = []interface{}{
 	(*Contact)(nil),               // 0: protoc_gen_openapiv3.options.Contact
 	(*License)(nil),               // 1: protoc_gen_openapiv3.options.License
@@ -2546,25 +2622,26 @@ var file_options_openapiv3_proto_goTypes = []interface{}{
 	(*Link)(nil),                  // 18: protoc_gen_openapiv3.options.Link
 	(*Response)(nil),              // 19: protoc_gen_openapiv3.options.Response
 	(*RequestBody)(nil),           // 20: protoc_gen_openapiv3.options.RequestBody
-	(*Operation)(nil),             // 21: protoc_gen_openapiv3.options.Operation
-	nil,                           // 22: protoc_gen_openapiv3.options.Server.VariablesEntry
-	nil,                           // 23: protoc_gen_openapiv3.options.Schema.PropertiesEntry
-	nil,                           // 24: protoc_gen_openapiv3.options.Discriminator.MappingEntry
-	nil,                           // 25: protoc_gen_openapiv3.options.Header.ExamplesEntry
-	nil,                           // 26: protoc_gen_openapiv3.options.Header.ContentEntry
-	nil,                           // 27: protoc_gen_openapiv3.options.MediaType.ExamplesEntry
-	nil,                           // 28: protoc_gen_openapiv3.options.MediaType.EncodingEntry
-	nil,                           // 29: protoc_gen_openapiv3.options.Encoding.HeadersEntry
-	nil,                           // 30: protoc_gen_openapiv3.options.Link.ParametersEntry
-	nil,                           // 31: protoc_gen_openapiv3.options.Response.HeadersEntry
-	nil,                           // 32: protoc_gen_openapiv3.options.Response.ContentEntry
-	nil,                           // 33: protoc_gen_openapiv3.options.Response.LinksEntry
-	nil,                           // 34: protoc_gen_openapiv3.options.RequestBody.ContentEntry
+	(*Tag)(nil),                   // 21: protoc_gen_openapiv3.options.Tag
+	(*Operation)(nil),             // 22: protoc_gen_openapiv3.options.Operation
+	nil,                           // 23: protoc_gen_openapiv3.options.Server.VariablesEntry
+	nil,                           // 24: protoc_gen_openapiv3.options.Schema.PropertiesEntry
+	nil,                           // 25: protoc_gen_openapiv3.options.Discriminator.MappingEntry
+	nil,                           // 26: protoc_gen_openapiv3.options.Header.ExamplesEntry
+	nil,                           // 27: protoc_gen_openapiv3.options.Header.ContentEntry
+	nil,                           // 28: protoc_gen_openapiv3.options.MediaType.ExamplesEntry
+	nil,                           // 29: protoc_gen_openapiv3.options.MediaType.EncodingEntry
+	nil,                           // 30: protoc_gen_openapiv3.options.Encoding.HeadersEntry
+	nil,                           // 31: protoc_gen_openapiv3.options.Link.ParametersEntry
+	nil,                           // 32: protoc_gen_openapiv3.options.Response.HeadersEntry
+	nil,                           // 33: protoc_gen_openapiv3.options.Response.ContentEntry
+	nil,                           // 34: protoc_gen_openapiv3.options.Response.LinksEntry
+	nil,                           // 35: protoc_gen_openapiv3.options.RequestBody.ContentEntry
 }
 var file_options_openapiv3_proto_depIdxs = []int32{
 	0,  // 0: protoc_gen_openapiv3.options.Info.contact:type_name -> protoc_gen_openapiv3.options.Contact
 	1,  // 1: protoc_gen_openapiv3.options.Info.license:type_name -> protoc_gen_openapiv3.options.License
-	22, // 2: protoc_gen_openapiv3.options.Server.variables:type_name -> protoc_gen_openapiv3.options.Server.VariablesEntry
+	23, // 2: protoc_gen_openapiv3.options.Server.variables:type_name -> protoc_gen_openapiv3.options.Server.VariablesEntry
 	5,  // 3: protoc_gen_openapiv3.options.OAuth2Flow.scopes:type_name -> protoc_gen_openapiv3.options.OAuth2Scope
 	6,  // 4: protoc_gen_openapiv3.options.OAuth2Flows.implicit:type_name -> protoc_gen_openapiv3.options.OAuth2Flow
 	6,  // 5: protoc_gen_openapiv3.options.OAuth2Flows.authorization_code:type_name -> protoc_gen_openapiv3.options.OAuth2Flow
@@ -2575,45 +2652,46 @@ var file_options_openapiv3_proto_depIdxs = []int32{
 	12, // 10: protoc_gen_openapiv3.options.Schema.xml:type_name -> protoc_gen_openapiv3.options.XML
 	13, // 11: protoc_gen_openapiv3.options.Schema.external_docs:type_name -> protoc_gen_openapiv3.options.ExternalDocumentation
 	10, // 12: protoc_gen_openapiv3.options.Schema.items:type_name -> protoc_gen_openapiv3.options.Schema
-	23, // 13: protoc_gen_openapiv3.options.Schema.properties:type_name -> protoc_gen_openapiv3.options.Schema.PropertiesEntry
+	24, // 13: protoc_gen_openapiv3.options.Schema.properties:type_name -> protoc_gen_openapiv3.options.Schema.PropertiesEntry
 	10, // 14: protoc_gen_openapiv3.options.Schema.additional_schema:type_name -> protoc_gen_openapiv3.options.Schema
 	10, // 15: protoc_gen_openapiv3.options.Schema.all_of:type_name -> protoc_gen_openapiv3.options.Schema
 	10, // 16: protoc_gen_openapiv3.options.Schema.one_of:type_name -> protoc_gen_openapiv3.options.Schema
 	10, // 17: protoc_gen_openapiv3.options.Schema.any_of:type_name -> protoc_gen_openapiv3.options.Schema
 	10, // 18: protoc_gen_openapiv3.options.Schema.not:type_name -> protoc_gen_openapiv3.options.Schema
-	24, // 19: protoc_gen_openapiv3.options.Discriminator.mapping:type_name -> protoc_gen_openapiv3.options.Discriminator.MappingEntry
+	25, // 19: protoc_gen_openapiv3.options.Discriminator.mapping:type_name -> protoc_gen_openapiv3.options.Discriminator.MappingEntry
 	10, // 20: protoc_gen_openapiv3.options.Header.schema:type_name -> protoc_gen_openapiv3.options.Schema
-	25, // 21: protoc_gen_openapiv3.options.Header.examples:type_name -> protoc_gen_openapiv3.options.Header.ExamplesEntry
-	26, // 22: protoc_gen_openapiv3.options.Header.content:type_name -> protoc_gen_openapiv3.options.Header.ContentEntry
+	26, // 21: protoc_gen_openapiv3.options.Header.examples:type_name -> protoc_gen_openapiv3.options.Header.ExamplesEntry
+	27, // 22: protoc_gen_openapiv3.options.Header.content:type_name -> protoc_gen_openapiv3.options.Header.ContentEntry
 	10, // 23: protoc_gen_openapiv3.options.MediaType.schema:type_name -> protoc_gen_openapiv3.options.Schema
-	27, // 24: protoc_gen_openapiv3.options.MediaType.examples:type_name -> protoc_gen_openapiv3.options.MediaType.ExamplesEntry
-	28, // 25: protoc_gen_openapiv3.options.MediaType.encoding:type_name -> protoc_gen_openapiv3.options.MediaType.EncodingEntry
-	29, // 26: protoc_gen_openapiv3.options.Encoding.headers:type_name -> protoc_gen_openapiv3.options.Encoding.HeadersEntry
-	30, // 27: protoc_gen_openapiv3.options.Link.parameters:type_name -> protoc_gen_openapiv3.options.Link.ParametersEntry
+	28, // 24: protoc_gen_openapiv3.options.MediaType.examples:type_name -> protoc_gen_openapiv3.options.MediaType.ExamplesEntry
+	29, // 25: protoc_gen_openapiv3.options.MediaType.encoding:type_name -> protoc_gen_openapiv3.options.MediaType.EncodingEntry
+	30, // 26: protoc_gen_openapiv3.options.Encoding.headers:type_name -> protoc_gen_openapiv3.options.Encoding.HeadersEntry
+	31, // 27: protoc_gen_openapiv3.options.Link.parameters:type_name -> protoc_gen_openapiv3.options.Link.ParametersEntry
 	4,  // 28: protoc_gen_openapiv3.options.Link.server:type_name -> protoc_gen_openapiv3.options.Server
-	31, // 29: protoc_gen_openapiv3.options.Response.headers:type_name -> protoc_gen_openapiv3.options.Response.HeadersEntry
-	32, // 30: protoc_gen_openapiv3.options.Response.content:type_name -> protoc_gen_openapiv3.options.Response.ContentEntry
-	33, // 31: protoc_gen_openapiv3.options.Response.links:type_name -> protoc_gen_openapiv3.options.Response.LinksEntry
-	34, // 32: protoc_gen_openapiv3.options.RequestBody.content:type_name -> protoc_gen_openapiv3.options.RequestBody.ContentEntry
-	19, // 33: protoc_gen_openapiv3.options.Operation.responses:type_name -> protoc_gen_openapiv3.options.Response
-	9,  // 34: protoc_gen_openapiv3.options.Operation.security:type_name -> protoc_gen_openapiv3.options.SecurityRequirement
-	20, // 35: protoc_gen_openapiv3.options.Operation.request_body:type_name -> protoc_gen_openapiv3.options.RequestBody
-	3,  // 36: protoc_gen_openapiv3.options.Server.VariablesEntry.value:type_name -> protoc_gen_openapiv3.options.ServerVariable
-	10, // 37: protoc_gen_openapiv3.options.Schema.PropertiesEntry.value:type_name -> protoc_gen_openapiv3.options.Schema
-	16, // 38: protoc_gen_openapiv3.options.Header.ExamplesEntry.value:type_name -> protoc_gen_openapiv3.options.Example
-	15, // 39: protoc_gen_openapiv3.options.Header.ContentEntry.value:type_name -> protoc_gen_openapiv3.options.MediaType
-	16, // 40: protoc_gen_openapiv3.options.MediaType.ExamplesEntry.value:type_name -> protoc_gen_openapiv3.options.Example
-	17, // 41: protoc_gen_openapiv3.options.MediaType.EncodingEntry.value:type_name -> protoc_gen_openapiv3.options.Encoding
-	14, // 42: protoc_gen_openapiv3.options.Encoding.HeadersEntry.value:type_name -> protoc_gen_openapiv3.options.Header
-	14, // 43: protoc_gen_openapiv3.options.Response.HeadersEntry.value:type_name -> protoc_gen_openapiv3.options.Header
-	15, // 44: protoc_gen_openapiv3.options.Response.ContentEntry.value:type_name -> protoc_gen_openapiv3.options.MediaType
-	18, // 45: protoc_gen_openapiv3.options.Response.LinksEntry.value:type_name -> protoc_gen_openapiv3.options.Link
-	15, // 46: protoc_gen_openapiv3.options.RequestBody.ContentEntry.value:type_name -> protoc_gen_openapiv3.options.MediaType
-	47, // [47:47] is the sub-list for method output_type
-	47, // [47:47] is the sub-list for method input_type
-	47, // [47:47] is the sub-list for extension type_name
-	47, // [47:47] is the sub-list for extension extendee
-	0,  // [0:47] is the sub-list for field type_name
+	32, // 29: protoc_gen_openapiv3.options.Response.headers:type_name -> protoc_gen_openapiv3.options.Response.HeadersEntry
+	33, // 30: protoc_gen_openapiv3.options.Response.content:type_name -> protoc_gen_openapiv3.options.Response.ContentEntry
+	34, // 31: protoc_gen_openapiv3.options.Response.links:type_name -> protoc_gen_openapiv3.options.Response.LinksEntry
+	35, // 32: protoc_gen_openapiv3.options.RequestBody.content:type_name -> protoc_gen_openapiv3.options.RequestBody.ContentEntry
+	13, // 33: protoc_gen_openapiv3.options.Tag.external_docs:type_name -> protoc_gen_openapiv3.options.ExternalDocumentation
+	19, // 34: protoc_gen_openapiv3.options.Operation.responses:type_name -> protoc_gen_openapiv3.options.Response
+	9,  // 35: protoc_gen_openapiv3.options.Operation.security:type_name -> protoc_gen_openapiv3.options.SecurityRequirement
+	20, // 36: protoc_gen_openapiv3.options.Operation.request_body:type_name -> protoc_gen_openapiv3.options.RequestBody
+	3,  // 37: protoc_gen_openapiv3.options.Server.VariablesEntry.value:type_name -> protoc_gen_openapiv3.options.ServerVariable
+	10, // 38: protoc_gen_openapiv3.options.Schema.PropertiesEntry.value:type_name -> protoc_gen_openapiv3.options.Schema
+	16, // 39: protoc_gen_openapiv3.options.Header.ExamplesEntry.value:type_name -> protoc_gen_openapiv3.options.Example
+	15, // 40: protoc_gen_openapiv3.options.Header.ContentEntry.value:type_name -> protoc_gen_openapiv3.options.MediaType
+	16, // 41: protoc_gen_openapiv3.options.MediaType.ExamplesEntry.value:type_name -> protoc_gen_openapiv3.options.Example
+	17, // 42: protoc_gen_openapiv3.options.MediaType.EncodingEntry.value:type_name -> protoc_gen_openapiv3.options.Encoding
+	14, // 43: protoc_gen_openapiv3.options.Encoding.HeadersEntry.value:type_name -> protoc_gen_openapiv3.options.Header
+	14, // 44: protoc_gen_openapiv3.options.Response.HeadersEntry.value:type_name -> protoc_gen_openapiv3.options.Header
+	15, // 45: protoc_gen_openapiv3.options.Response.ContentEntry.value:type_name -> protoc_gen_openapiv3.options.MediaType
+	18, // 46: protoc_gen_openapiv3.options.Response.LinksEntry.value:type_name -> protoc_gen_openapiv3.options.Link
+	15, // 47: protoc_gen_openapiv3.options.RequestBody.ContentEntry.value:type_name -> protoc_gen_openapiv3.options.MediaType
+	48, // [48:48] is the sub-list for method output_type
+	48, // [48:48] is the sub-list for method input_type
+	48, // [48:48] is the sub-list for extension type_name
+	48, // [48:48] is the sub-list for extension extendee
+	0,  // [0:48] is the sub-list for field type_name
 }
 
 func init() { file_options_openapiv3_proto_init() }
@@ -2875,6 +2953,18 @@ func file_options_openapiv3_proto_init() {
 			}
 		}
 		file_options_openapiv3_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Tag); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_options_openapiv3_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Operation); i {
 			case 0:
 				return &v.state
@@ -2897,7 +2987,7 @@ func file_options_openapiv3_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_options_openapiv3_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   35,
+			NumMessages:   36,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

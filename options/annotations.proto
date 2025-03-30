@@ -9,14 +9,19 @@ option go_package = "github.com/sapk/protoc-gen-openapiv3/options";
 
 // FileOptions represents the OpenAPI object options for a proto file.
 extend google.protobuf.FileOptions {
-  // Info provides metadata about the API.
+  // Info provides metadata about the API, such as title, version, description, and contact information.
   Info info = 50000;
-  // Server provides information about the server.
+  // Server provides information about API servers, including URL, description, and variables.
   repeated Server server = 50001;
-  // SecurityScheme provides information about the securitySchemes.
+  // SecurityScheme defines security schemes that can be used by the operations,
+  // such as API keys, OAuth2, or HTTP authentication.
   repeated SecurityScheme securityScheme = 50002;
-  // Security provides default securitySchemes to use.
+  // Security specifies which security mechanisms should be used for the API by default.
+  // Each requirement specifies required scopes for specific security schemes.
   repeated SecurityRequirement security = 50003;
+  // Tag allows grouping operations by tags, providing additional metadata for documentation.
+  // Tags help organize API operations into logical groups.
+  repeated Tag tag = 50004;
 }
 
 // MethodOptions represents the OpenAPI path object options for a proto file.

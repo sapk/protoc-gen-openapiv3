@@ -326,6 +326,16 @@ message RequestBody {
   bool required = 3;
 }
 
+// Tag object represents metadata for a single tag used by the Operation Object
+message Tag {
+  // REQUIRED. The name of the tag.
+  string name = 1;
+  // A description for the tag. CommonMark syntax MAY be used for rich text representation.
+  string description = 2;
+  // Additional external documentation for this tag.
+  ExternalDocumentation external_docs = 3;
+}
+
 // OpenAPI Operation object
 message Operation {
   string summary = 1;
