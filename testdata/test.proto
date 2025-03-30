@@ -141,6 +141,79 @@ service UserService {
     option (protoc_gen_openapiv3.options.operation) = {
       summary: "GetUser retrieves a user by ID (override)"
       description: "Returns the full user details including profile information, status, and metadata. (override)"
+      parameters: {
+        name: "user_id"
+        in: "path"
+        description: "The unique identifier of the user"
+        required: true
+        schema: {
+          type: "string"
+          pattern: "^[a-zA-Z0-9-]+$"
+        }
+      }
+      parameters: {
+        name: "fields"
+        in: "query"
+        description: "Comma-separated list of fields to include in the response"
+        required: false
+        schema: {
+          type: "array"
+          items: {
+            type: "string"
+            enum: ["id", "email", "full_name", "status", "roles", "address", "metadata", "created_at", "updated_at"]
+          }
+        }
+        style: "form"
+        explode: true
+      }
+      parameters: {
+        name: "version"
+        in: "header"
+        description: "API version to use"
+        required: false
+        schema: {
+          type: "string"
+          default: "v1"
+        }
+        style: "simple"
+      }
+      parameters: {
+        name: "include_deleted"
+        in: "query"
+        description: "Whether to include deleted users in the response"
+        required: false
+        schema: {
+          type: "boolean"
+        }
+        allow_empty_value: true
+      }
+      parameters: {
+        name: "filter"
+        in: "query"
+        description: "Complex filter object for advanced filtering"
+        required: false
+        schema: {
+          type: "object"
+          properties: {
+            status: {
+              type: "string"
+              enum: ["USER_STATUS_ACTIVE", "USER_STATUS_INACTIVE", "USER_STATUS_SUSPENDED"]
+            }
+            roles: {
+              type: "array"
+              items: {
+                type: "string"
+              }
+            }
+            created_after: {
+              type: "string"
+              format: "date-time"
+            }
+          }
+        }
+        style: "deepObject"
+        explode: true
+      }
       responses: {
         code: "200"
         description: "Successfully retrieved user details"
