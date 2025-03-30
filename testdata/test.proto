@@ -51,16 +51,16 @@ option (protoc_gen_openapiv3.options.securityScheme) = {
       token_url: "https://auth.test.com/oauth/token"
       refresh_url: "https://auth.test.com/oauth/refresh"
       scopes: {
-        key: "read"
-        value: "Read access to user data"
+        name: "read"
+        description: "Read access to user data"
       }
       scopes: {
-        key: "write"
-        value: "Write access to user data"
+        name: "write"
+        description: "Write access to user data"
       }
       scopes: {
-        key: "admin"
-        value: "Administrative access"
+        name: "admin"
+        description: "Administrative access"
       }
     }
   }
