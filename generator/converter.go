@@ -227,6 +227,17 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 				}
 			}
 
+			// Set operation security requirements if present
+			if len(method.Security) > 0 {
+				operation.Security = make([]*base.SecurityRequirement, len(method.Security))
+				for i, req := range method.Security {
+					operation.Security[i] = &base.SecurityRequirement{
+						Requirements: orderedmap.New[string, []string](),
+					}
+					operation.Security[i].Requirements.Set(req.GetName(), req.GetScopes())
+				}
+			}
+
 			// Extract path parameters
 			pathParams := extractPathParameters(path)
 			for _, param := range pathParams {
