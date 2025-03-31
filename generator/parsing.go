@@ -24,6 +24,7 @@ type ParsedFile struct {
 	SecuritySchemes []*options.SecurityScheme
 	Security        []*options.SecurityRequirement
 	Tags            []*options.Tag
+	ExternalDocs    *options.ExternalDocumentation
 	V2Swagger       *v2options.Swagger
 }
 

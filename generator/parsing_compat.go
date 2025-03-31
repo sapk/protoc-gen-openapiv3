@@ -2,7 +2,6 @@ package generator
 
 import (
 	"fmt"
-	"strings"
 
 	v2options "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options"
 	"github.com/sapk/protoc-gen-openapiv3/options"
@@ -38,6 +37,14 @@ func (g *OpenAPIGenerator) convertV2ToV3(parsed *ParsedFile) error {
 				Name: parsed.V2Swagger.Info.License.Name,
 				Url:  parsed.V2Swagger.Info.License.Url,
 			}
+		}
+	}
+
+	// Convert servers
+	if parsed.V2Swagger.Host != "" || parsed.V2Swagger.BasePath != "" || len(parsed.V2Swagger.Schemes) > 0 {
+		server := convertV2ServerToV3(parsed.V2Swagger.Host, parsed.V2Swagger.BasePath, parsed.V2Swagger.Schemes)
+		if server != nil {
+			parsed.Servers = append(parsed.Servers, server)
 		}
 	}
 
@@ -119,104 +126,21 @@ func (g *OpenAPIGenerator) convertV2ToV3(parsed *ParsedFile) error {
 		}
 	}
 
-	return nil
-}
-
-// convertV2RefToV3 converts a v2 reference to v3 format
-func convertV2RefToV3(ref string) string {
-	if strings.HasPrefix(ref, "#/definitions/") {
-		return "#/components/schemas/" + strings.TrimPrefix(ref, "#/definitions/")
-	}
-	return ref
-}
-
-// convertV2SecurityToV3 converts OpenAPI v2 security requirements to v3 format
-func convertV2SecurityToV3(security []*v2options.SecurityRequirement) []*options.SecurityRequirement {
-	if len(security) == 0 {
-		return nil
-	}
-
-	v3Security := make([]*options.SecurityRequirement, 0, len(security))
-	for _, req := range security {
-		// Convert each security requirement in the map
-		for name, value := range req.GetSecurityRequirement() {
-			v3Req := &options.SecurityRequirement{
-				Name:   name,
-				Scopes: make([]string, 0),
-			}
-			if value != nil {
-				v3Req.Scopes = append(v3Req.Scopes, value.GetScope()...)
-			}
-			v3Security = append(v3Security, v3Req)
+	// Convert external documentation
+	if parsed.V2Swagger.ExternalDocs != nil {
+		parsed.ExternalDocs = &options.ExternalDocumentation{
+			Description: parsed.V2Swagger.ExternalDocs.Description,
+			Url:         parsed.V2Swagger.ExternalDocs.Url,
 		}
 	}
-	return v3Security
-}
 
-// convertV2TagToV3 converts OpenAPI v2 tag to v3 format
-func convertV2TagToV3(tag *v2options.Tag) *options.Tag {
-	if tag == nil {
-		return nil
+	// Convert responses
+	if parsed.V2Swagger.Responses != nil {
+		// Note: Response conversion should be handled in the response-specific conversion logic
+		// as it requires handling of different response types and content types
 	}
 
-	return &options.Tag{
-		Name:         tag.GetName(),
-		Description:  tag.GetDescription(),
-		ExternalDocs: convertV2ExternalDocsToV3(tag.GetExternalDocs()),
-	}
-}
-
-// convertV2ExternalDocsToV3 converts OpenAPI v2 external documentation to v3 format
-func convertV2ExternalDocsToV3(docs *v2options.ExternalDocumentation) *options.ExternalDocumentation {
-	if docs == nil {
-		return nil
-	}
-
-	return &options.ExternalDocumentation{
-		Description: docs.GetDescription(),
-		Url:         docs.GetUrl(),
-	}
-}
-
-// convertV2InfoToV3 converts OpenAPI v2 info to v3 format
-func convertV2InfoToV3(info *v2options.Info) *options.Info {
-	if info == nil {
-		return nil
-	}
-
-	return &options.Info{
-		Title:          info.GetTitle(),
-		Description:    info.GetDescription(),
-		TermsOfService: info.GetTermsOfService(),
-		Contact:        convertV2ContactToV3(info.GetContact()),
-		License:        convertV2LicenseToV3(info.GetLicense()),
-		Version:        info.GetVersion(),
-	}
-}
-
-// convertV2ContactToV3 converts OpenAPI v2 contact to v3 format
-func convertV2ContactToV3(contact *v2options.Contact) *options.Contact {
-	if contact == nil {
-		return nil
-	}
-
-	return &options.Contact{
-		Name:  contact.GetName(),
-		Url:   contact.GetUrl(),
-		Email: contact.GetEmail(),
-	}
-}
-
-// convertV2LicenseToV3 converts OpenAPI v2 license to v3 format
-func convertV2LicenseToV3(license *v2options.License) *options.License {
-	if license == nil {
-		return nil
-	}
-
-	return &options.License{
-		Name: license.GetName(),
-		Url:  license.GetUrl(),
-	}
+	return nil
 }
 
 // convertV2ServerToV3 converts OpenAPI v2 server information to v3 format
