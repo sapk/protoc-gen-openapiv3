@@ -1,285 +1,285 @@
-openapi: 3.1.0
-info:
-    title: User Management API
-    description: API for managing users in the system. Provides CRUD operations and user status management.
-    termsOfService: https://test.com/terms
-    contact:
-        name: API Support
-        url: https://test.com/support
-        email: support@test.com
-    license:
-        name: Apache 2.0
-        url: https://www.apache.org/licenses/LICENSE-2.0.html
-    version: 1.2.3
-servers:
-    - url: https://test.com/v1
-      description: Server for test.com
-paths:
-    /v1/users/{user_id}:
-        get:
-            tags:
-                - UserService
-            summary: GetUser retrieves a user by ID
-            description: Returns the full user details including profile information, status, and metadata.
-            operationId: GetUser
-            parameters: []
-            responses:
-                "200":
-                    description: Response for GetUser operation
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/User'
-        put:
-            tags:
-                - UserService
-            summary: UpdateUser updates an existing user
-            description: Updates all fields of an existing user with the provided values.
-            operationId: UpdateUser
-            parameters: []
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateUserRequest'
-            responses:
-                "200":
-                    description: Response for UpdateUser operation
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/User'
-        delete:
-            tags:
-                - UserService
-            summary: DeleteUser deletes a user
-            description: Permanently removes a user from the system.
-            operationId: DeleteUser
-            parameters: []
-            responses:
-                "200":
-                    description: Response for DeleteUser operation
-        patch:
-            tags:
-                - UserService
-            summary: PatchUser partially updates an existing user
-            description: Updates only the specified fields of an existing user while preserving other fields.
-            operationId: PatchUser
-            parameters: []
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/PatchUserRequest'
-            responses:
-                "200":
-                    description: Response for PatchUser operation
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/User'
-    /v1/users:
-        get:
-            tags:
-                - UserService
-            summary: ListUsers retrieves a list of users with optional filtering
-            description: Returns a paginated list of users that can be filtered by status, roles, and search query.
-            operationId: ListUsers
-            parameters: []
-            responses:
-                "200":
-                    description: Response for ListUsers operation
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListUsersResponse'
-        post:
-            tags:
-                - UserService
-            summary: CreateUser creates a new user
-            description: Creates a new user with the provided details and returns the created user with generated ID.
-            operationId: CreateUser
-            parameters: []
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/CreateUserRequest'
-            responses:
-                "200":
-                    description: Response for CreateUser operation
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/User'
 components:
-    schemas:
-        UserStatus:
-            type: string
-            enum:
-                - USER_STATUS_UNSPECIFIED
-                - USER_STATUS_ACTIVE
-                - USER_STATUS_INACTIVE
-                - USER_STATUS_SUSPENDED
-                - USER_STATUS_DELETED
-            description: |-
-                UserStatus represents the current status of a user
-                 Defines the possible states a user can be in within the system.
-            default: USER_STATUS_UNSPECIFIED
-        Address:
-            type: object
-            properties:
-                street:
-                    type: string
-                city:
-                    type: string
-                state:
-                    type: string
-                country:
-                    type: string
-                postal_code:
-                    type: string
-            required:
-                - street
-                - city
-                - state
-                - country
-                - postal_code
-            description: |-
-                Address represents a physical address
-                 Contains structured address information for a user's physical location.
-        User:
-            type: object
-            properties:
-                user_id:
-                    type: string
-                email:
-                    type: string
-                status:
-                    $ref: '#/components/schemas/UserStatus'
-                updated_at:
-                    type: string
-                    format: date-time
-                full_name:
-                    type: string
-                roles:
-                    type: array
-                    items:
-                        type: string
-                address:
-                    $ref: '#/components/schemas/Address'
-                metadata:
-                    type: object
-                    additionalProperties:
-                        type: string
-                created_at:
-                    type: string
-                    format: date-time
-            required:
-                - user_id
-                - email
-                - full_name
-                - status
-                - roles
-                - metadata
-                - created_at
-                - updated_at
-            description: |-
-                User represents a user in the system
-                 Contains all user information including profile details, status, and metadata.
-        ListUsersResponse:
-            type: object
-            properties:
-                users:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/User'
-                next_page_token:
-                    type: string
-                total_count:
-                    type: integer
-            required:
-                - users
-                - next_page_token
-                - total_count
-            description: "ListUsersResponse contains the list of users and pagination information\n\n Returns the filtered list of users \n along with pagination metadata."
-        CreateUserRequest:
-            type: object
-            properties:
-                user:
-                    $ref: '#/components/schemas/User'
-            required:
-                - user
-            description: |-
-                CreateUserRequest is used to create a new user
-                 Contains the user details needed to create a new user account.
-        UpdateUserRequest:
-            type: object
-            properties:
-                user_id:
-                    type: string
-                user:
-                    $ref: '#/components/schemas/User'
-            required:
-                - user_id
-                - user
-            description: |-
-                UpdateUserRequest is used to update an existing user
-                 Contains the user ID and the updated user details.
-        PatchUserRequest:
-            type: object
-            properties:
-                user:
-                    $ref: '#/components/schemas/User'
-                user_id:
-                    type: string
-            required:
-                - user_id
-                - user
-            description: |-
-                PatchUserRequest is used to partially update an existing user
+  schemas:
+    Address:
+      description: |-
+        Address represents a physical address
+         Contains structured address information for a user's physical location.
+      properties:
+        city:
+          type: string
+        country:
+          type: string
+        postal_code:
+          type: string
+        state:
+          type: string
+        street:
+          type: string
+      required:
+        - street
+        - city
+        - state
+        - country
+        - postal_code
+      type: object
+    CreateUserRequest:
+      description: |-
+        CreateUserRequest is used to create a new user
+         Contains the user details needed to create a new user account.
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+        - user
+      type: object
+    ListUsersResponse:
+      description: "ListUsersResponse contains the list of users and pagination information\n\n Returns the filtered list of users \n along with pagination metadata."
+      properties:
+        next_page_token:
+          type: string
+        total_count:
+          type: integer
+        users:
+          items:
+            $ref: '#/components/schemas/User'
+          type: array
+      required:
+        - users
+        - next_page_token
+        - total_count
+      type: object
+    PatchUserRequest:
+      description: |-
+        PatchUserRequest is used to partially update an existing user
 
-                 Contains the user ID and the fields to be updated.
-    securitySchemes:
-        oauth2:
-            type: oauth2
-            description: OAuth2 authentication with authorization code flow
-            name: oauth2
-            flows:
-                authorizationCode:
-                    authorizationUrl: https://auth.test.com/oauth/authorize
-                    tokenUrl: https://auth.test.com/oauth/token
-                    scopes:
-                        admin: Administrative access
-                        read: Read access to user data
-                        write: Write access to user data
-        http:
-            type: http
-            description: Bearer token authentication
-            name: bearer
-            scheme: basic
-        apiKey:
-            type: apiKey
-            description: API key authentication
-            name: X-API-Key
-            in: header
+         Contains the user ID and the fields to be updated.
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        user_id:
+          type: string
+      required:
+        - user_id
+        - user
+      type: object
+    UpdateUserRequest:
+      description: |-
+        UpdateUserRequest is used to update an existing user
+         Contains the user ID and the updated user details.
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        user_id:
+          type: string
+      required:
+        - user_id
+        - user
+      type: object
+    User:
+      description: |-
+        User represents a user in the system
+         Contains all user information including profile details, status, and metadata.
+      properties:
+        address:
+          $ref: '#/components/schemas/Address'
+        created_at:
+          format: date-time
+          type: string
+        email:
+          type: string
+        full_name:
+          type: string
+        metadata:
+          additionalProperties:
+            type: string
+          type: object
+        roles:
+          items:
+            type: string
+          type: array
+        status:
+          $ref: '#/components/schemas/UserStatus'
+        updated_at:
+          format: date-time
+          type: string
+        user_id:
+          type: string
+      required:
+        - user_id
+        - email
+        - full_name
+        - status
+        - roles
+        - metadata
+        - created_at
+        - updated_at
+      type: object
+    UserStatus:
+      default: USER_STATUS_UNSPECIFIED
+      description: |-
+        UserStatus represents the current status of a user
+         Defines the possible states a user can be in within the system.
+      enum:
+        - USER_STATUS_UNSPECIFIED
+        - USER_STATUS_ACTIVE
+        - USER_STATUS_INACTIVE
+        - USER_STATUS_SUSPENDED
+        - USER_STATUS_DELETED
+      type: string
+  securitySchemes:
+    apiKey:
+      description: API key authentication
+      in: header
+      name: X-API-Key
+      type: apiKey
+    http:
+      description: Bearer token authentication
+      name: bearer
+      scheme: basic
+      type: http
+    oauth2:
+      description: OAuth2 authentication with authorization code flow
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.test.com/oauth/authorize
+          scopes:
+            admin: Administrative access
+            read: Read access to user data
+            write: Write access to user data
+          tokenUrl: https://auth.test.com/oauth/token
+      name: oauth2
+      type: oauth2
+info:
+  contact:
+    email: support@test.com
+    name: API Support
+    url: https://test.com/support
+  description: API for managing users in the system. Provides CRUD operations and user status management.
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: https://test.com/terms
+  title: User Management API
+  version: 1.2.3
+openapi: 3.1.0
+paths:
+  /v1/users:
+    get:
+      description: Returns a paginated list of users that can be filtered by status, roles, and search query.
+      operationId: ListUsers
+      parameters: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListUsersResponse'
+          description: Response for ListUsers operation
+      summary: ListUsers retrieves a list of users with optional filtering
+      tags:
+        - UserService
+    post:
+      description: Creates a new user with the provided details and returns the created user with generated ID.
+      operationId: CreateUser
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: Response for CreateUser operation
+      summary: CreateUser creates a new user
+      tags:
+        - UserService
+  /v1/users/{user_id}:
+    delete:
+      description: Permanently removes a user from the system.
+      operationId: DeleteUser
+      parameters: []
+      responses:
+        "200":
+          description: Response for DeleteUser operation
+      summary: DeleteUser deletes a user
+      tags:
+        - UserService
+    get:
+      description: Returns the full user details including profile information, status, and metadata.
+      operationId: GetUser
+      parameters: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: Response for GetUser operation
+      summary: GetUser retrieves a user by ID
+      tags:
+        - UserService
+    patch:
+      description: Updates only the specified fields of an existing user while preserving other fields.
+      operationId: PatchUser
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchUserRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: Response for PatchUser operation
+      summary: PatchUser partially updates an existing user
+      tags:
+        - UserService
+    put:
+      description: Updates all fields of an existing user with the provided values.
+      operationId: UpdateUser
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: Response for UpdateUser operation
+      summary: UpdateUser updates an existing user
+      tags:
+        - UserService
 security:
-    - apiKey:
-        - read
-        - ""
+  - apiKey:
+      - read
+      - ""
+servers:
+  - description: Server for test.com
+    url: https://test.com/v1
 tags:
-    - name: users
-      description: User management operations including CRUD operations and user status management
-      externalDocs:
-        description: Find more information about user management
-        url: https://test.com/docs/users
-    - name: user-profile
-      description: Operations related to user profile management and updates
-      externalDocs:
-        description: Learn more about user profiles
-        url: https://test.com/docs/user-profiles
-    - name: user-status
-      description: Operations for managing user status and account state
-      externalDocs:
-        description: User status management documentation
-        url: https://test.com/docs/user-status
+  - description: User management operations including CRUD operations and user status management
+    externalDocs:
+      description: Find more information about user management
+      url: https://test.com/docs/users
+    name: users
+  - description: Operations related to user profile management and updates
+    externalDocs:
+      description: Learn more about user profiles
+      url: https://test.com/docs/user-profiles
+    name: user-profile
+  - description: Operations for managing user status and account state
+    externalDocs:
+      description: User status management documentation
+      url: https://test.com/docs/user-status
+    name: user-status
