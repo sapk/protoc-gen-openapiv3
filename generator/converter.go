@@ -89,6 +89,14 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 		}
 	}
 
+	// Convert External Documentation if present
+	if parsedFile.ExternalDocs != nil {
+		doc.ExternalDocs = &base.ExternalDoc{
+			Description: parsedFile.ExternalDocs.GetDescription(),
+			URL:         parsedFile.ExternalDocs.GetUrl(),
+		}
+	}
+
 	// Convert Security Schemes if present
 	if len(parsedFile.SecuritySchemes) > 0 {
 		for _, scheme := range parsedFile.SecuritySchemes {

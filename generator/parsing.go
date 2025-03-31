@@ -153,6 +153,15 @@ func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, err
 			}
 		}
 
+		// Parse OpenAPI ExternalDocs options
+		externalDocsExt := proto.GetExtension(file.Desc.Options(), options.E_ExternalDocs)
+		if externalDocsExt != nil {
+			externalDocs, ok := externalDocsExt.(*options.ExternalDocumentation)
+			if ok {
+				parsed.ExternalDocs = externalDocs
+			}
+		}
+
 		// Parse v2 Swagger options
 		v2SwaggerExt := proto.GetExtension(file.Desc.Options(), v2options.E_Openapiv2Swagger)
 		if v2SwaggerExt != nil {

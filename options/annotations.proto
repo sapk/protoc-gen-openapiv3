@@ -22,6 +22,8 @@ extend google.protobuf.FileOptions {
   // Tag allows grouping operations by tags, providing additional metadata for documentation.
   // Tags help organize API operations into logical groups.
   repeated Tag tag = 50004;
+  // ExternalDocs provides additional external documentation for the API.
+  ExternalDocumentation externalDocs = 50005;
 }
 
 // MethodOptions represents the OpenAPI path object options for a proto file.

@@ -119,6 +119,12 @@ option (protoc_gen_openapiv3.options.tag) = {
   }
 };
 
+// Add external documentation for the API
+option (protoc_gen_openapiv3.options.externalDocs) = {
+  description: "Find more information about the User Management API"
+  url: "https://test.com/docs/api"
+};
+
 // Error represents a standard API error response
 message Error {
   // A human-readable error message
