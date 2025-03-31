@@ -178,6 +178,11 @@ func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, err
 		parsed.Enums = append(parsed.Enums, parsedEnum)
 	}
 
+	// Convert v2 annotations to v3 format
+	if err := g.convertV2ToV3(parsed); err != nil {
+		return nil, fmt.Errorf("failed to convert v2 to v3: %w", err)
+	}
+
 	return parsed, nil
 }
 
