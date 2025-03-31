@@ -235,6 +235,9 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 				pathItem.Post = operation
 			}
 
+			// Extract path parameters and add them to the method parameters
+			pathParams := extractPathParameters(path)
+
 			// Set operation annotation
 			if method.Operation != nil {
 				if method.Operation.GetSummary() != "" {
@@ -247,7 +250,27 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 					operation.Deprecated = &method.Operation.Deprecated
 				}
 
-				// Convert parameters from operation annotation
+				for _, param := range pathParams {
+					var found bool
+					for _, mParam := range method.Parameters {
+						if mParam.GetName() == param && mParam.GetIn() == "path" {
+							// Found matching parameter, no need to add it again
+							found = true
+							break
+						}
+					}
+					if !found {
+						method.Parameters = append(method.Parameters, &options.Parameter{
+							Name:        param,
+							In:          "path",
+							Required:    true,
+							Schema:      &options.Schema{Type: "string"},
+							Description: fmt.Sprintf("Path parameter %s", param),
+						})
+					}
+				}
+
+				// Add parameters from operation annotation first
 				if len(method.Parameters) > 0 {
 					operation.Parameters = make([]*high.Parameter, len(method.Parameters))
 					for i, param := range method.Parameters {
@@ -296,6 +319,17 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 						}
 					}
 				}
+			} else {
+				for _, param := range pathParams { // ensure all path parameters are added
+					required := true
+					operation.Parameters = append(operation.Parameters, &high.Parameter{
+						Name:        param,
+						In:          "path",
+						Required:    &required,
+						Schema:      createPrimitiveSchema("string", ""),
+						Description: fmt.Sprintf("Path parameter %s", param),
+					})
+				}
 			}
 
 			// Set operation security requirements if present
@@ -307,19 +341,6 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 					}
 					operation.Security[i].Requirements.Set(req.GetName(), req.GetScopes())
 				}
-			}
-
-			// Extract path parameters
-			pathParams := extractPathParameters(path)
-			for _, param := range pathParams {
-				required := true
-				operation.Parameters = append(operation.Parameters, &high.Parameter{
-					Name:        param,
-					In:          "path",
-					Required:    &required,
-					Schema:      createPrimitiveSchema("string", ""),
-					Description: fmt.Sprintf("Path parameter %s", param),
-				})
 			}
 
 			// Find the input message type
@@ -335,13 +356,15 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 			if inputMessage != nil {
 				bodyField := method.HTTPBody
 				pathParamMap := make(map[string]bool)
-				for _, param := range pathParams {
-					pathParamMap[param] = true
+				for _, param := range operation.Parameters {
+					if param.In == "path" {
+						pathParamMap[param.Name] = true
+					}
 				}
 
 				for _, field := range inputMessage.Fields {
 					// Skip fields that are in the path or body
-					if pathParamMap[field.Name] || field.Name == bodyField {
+					if pathParamMap[field.Name] || field.Name == bodyField { // TODO store body field in method	parameters ?
 						continue
 					}
 
