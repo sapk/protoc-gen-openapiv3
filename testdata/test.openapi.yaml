@@ -1,0 +1,504 @@
+openapi: 3.1.0
+info:
+    title: User Management API
+    description: API for managing users in the system. Provides CRUD operations and user status management.
+    termsOfService: https://test.com/terms
+    contact:
+        name: API Support
+        url: https://test.com/support
+        email: support@test.com
+    license:
+        name: Apache 2.0
+        url: https://www.apache.org/licenses/LICENSE-2.0.html
+    version: 1.2.3
+servers:
+    - url: https://dev.test.com/v1
+      description: Development server
+    - url: https://preprod.test.com/v1
+      description: PreProduction server
+    - url: https://test.com/v1
+      description: Production server
+paths:
+    /v1/users/{user_id}:
+        get:
+            tags:
+                - UserService
+            summary: GetUser retrieves a user by ID (override)
+            description: Returns the full user details including profile information, status, and metadata. (override)
+            operationId: GetUser
+            parameters:
+                - name: user_id
+                  in: path
+                  description: The unique identifier of the user
+                  required: true
+                  schema:
+                    type: string
+                    pattern: ^[a-zA-Z0-9-]+$
+                - name: fields
+                  in: query
+                  description: Comma-separated list of fields to include in the response
+                  required: false
+                  style: form
+                  explode: true
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                        enum:
+                            - id
+                            - email
+                            - full_name
+                            - status
+                            - roles
+                            - address
+                            - metadata
+                            - created_at
+                            - updated_at
+                        default: id
+                - name: version
+                  in: header
+                  description: API version to use
+                  required: false
+                  style: simple
+                  schema:
+                    type: string
+                - name: include_deleted
+                  in: query
+                  description: Whether to include deleted users in the response
+                  required: false
+                  allowEmptyValue: true
+                  schema:
+                    type: boolean
+                - name: filter
+                  in: query
+                  description: Complex filter object for advanced filtering
+                  required: false
+                  style: deepObject
+                  explode: true
+                  schema:
+                    type: object
+                    properties:
+                        roles:
+                            type: array
+                            items:
+                                type: string
+                        created_after:
+                            type: string
+                            format: date-time
+                        status:
+                            type: string
+                            enum:
+                                - USER_STATUS_ACTIVE
+                                - USER_STATUS_INACTIVE
+                                - USER_STATUS_SUSPENDED
+                            default: USER_STATUS_ACTIVE
+            responses:
+                "200":
+                    description: Successfully retrieved user details
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/User'
+                "404":
+                    description: User not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "403":
+                    description: Insufficient permissions to access user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        put:
+            tags:
+                - UserService
+            summary: UpdateUser updates an existing user
+            description: Updates all fields of an existing user with the provided values.
+            operationId: UpdateUser
+            parameters:
+                - name: user_id
+                  in: path
+                  description: Path parameter user_id
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                description: Updated user object
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/User'
+                        examples:
+                            user:
+                                summary: Updated User Example
+                                description: A sample updated user object
+                required: true
+            responses:
+                "200":
+                    description: User successfully updated
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/User'
+                "400":
+                    description: Invalid user data provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "404":
+                    description: User not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "403":
+                    description: Insufficient permissions to update user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+            security:
+                - oauth2:
+                    - write
+        delete:
+            tags:
+                - UserService
+            summary: DeleteUser deletes a user
+            description: Permanently removes a user from the system.
+            operationId: DeleteUser
+            parameters:
+                - name: user_id
+                  in: path
+                  description: Path parameter user_id
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "204":
+                    description: User successfully deleted
+                "404":
+                    description: User not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "403":
+                    description: Insufficient permissions to delete user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "409":
+                    description: User cannot be deleted due to existing dependencies
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+            security:
+                - oauth2:
+                    - admin
+        patch:
+            tags:
+                - UserService
+            summary: PatchUser partially updates an existing user
+            description: Updates only the specified fields of an existing user while preserving other fields.
+            operationId: PatchUser
+            parameters:
+                - name: user_id
+                  in: path
+                  description: Path parameter user_id
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PatchUserRequest'
+            responses:
+                "200":
+                    description: User successfully updated
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/User'
+                "400":
+                    description: Invalid user data provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "404":
+                    description: User not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "403":
+                    description: Insufficient permissions to update user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+            security:
+                - oauth2:
+                    - write
+    /v1/users:
+        get:
+            tags:
+                - UserService
+            summary: ListUsers retrieves a list of users with optional filtering
+            description: Returns a paginated list of users that can be filtered by status, roles, and search query.
+            operationId: ListUsers
+            parameters: []
+            responses:
+                "200":
+                    description: Successfully retrieved list of users
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListUsersResponse'
+                "400":
+                    description: Invalid request parameters
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "403":
+                    description: Insufficient permissions to list users
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+            security:
+                - oauth2:
+                    - read
+        post:
+            tags:
+                - UserService
+            summary: CreateUser creates a new user
+            description: Creates a new user with the provided details and returns the created user with generated ID.
+            operationId: CreateUser
+            parameters: []
+            requestBody:
+                description: User object to be created
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateUserRequest'
+                        examples:
+                            user:
+                                summary: User Example
+                                description: A sample user object
+                required: true
+            responses:
+                "201":
+                    description: User successfully created
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/User'
+                "400":
+                    description: Invalid user data provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "409":
+                    description: User with provided email already exists
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "403":
+                    description: Insufficient permissions to create user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+            security:
+                - oauth2:
+                    - write
+components:
+    schemas:
+        UserStatus:
+            type: string
+            enum:
+                - USER_STATUS_UNSPECIFIED
+                - USER_STATUS_ACTIVE
+                - USER_STATUS_INACTIVE
+                - USER_STATUS_SUSPENDED
+                - USER_STATUS_DELETED
+            description: |-
+                UserStatus represents the current status of a user
+                 Defines the possible states a user can be in within the system.
+            default: USER_STATUS_UNSPECIFIED
+        Address:
+            type: object
+            properties:
+                country:
+                    type: string
+                postal_code:
+                    type: string
+                street:
+                    type: string
+                city:
+                    type: string
+                state:
+                    type: string
+            required:
+                - street
+                - city
+                - state
+                - country
+                - postal_code
+            description: |-
+                Address represents a physical address
+                 Contains structured address information for a user's physical location.
+        User:
+            type: object
+            properties:
+                address:
+                    $ref: '#/components/schemas/Address'
+                created_at:
+                    type: string
+                    format: date-time
+                updated_at:
+                    type: string
+                    format: date-time
+                full_name:
+                    type: string
+                metadata:
+                    type: object
+                    additionalProperties:
+                        type: string
+                user_id:
+                    type: string
+                email:
+                    type: string
+                status:
+                    $ref: '#/components/schemas/UserStatus'
+                roles:
+                    type: array
+                    items:
+                        type: string
+            required:
+                - user_id
+                - email
+                - full_name
+                - status
+                - roles
+                - metadata
+                - created_at
+                - updated_at
+            description: |-
+                User represents a user in the system
+                 Contains all user information including profile details, status, and metadata.
+        Error:
+            type: object
+            properties:
+                details:
+                    type: object
+                    additionalProperties:
+                        type: string
+                        description: Additional error details
+                message:
+                    type: string
+                    description: A human-readable error message
+                code:
+                    type: integer
+                    description: A machine-readable error code
+            required:
+                - message
+                - code
+                - details
+            description: Error represents a standard API error response
+        ListUsersResponse:
+            type: object
+            properties:
+                users:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/User'
+                next_page_token:
+                    type: string
+                total_count:
+                    type: integer
+            required:
+                - users
+                - next_page_token
+                - total_count
+            description: "ListUsersResponse contains the list of users and pagination information\n\n Returns the filtered list of users \n along with pagination metadata."
+        CreateUserRequest:
+            type: object
+            properties:
+                user:
+                    $ref: '#/components/schemas/User'
+            required:
+                - user
+            description: |-
+                CreateUserRequest is used to create a new user
+                 Contains the user details needed to create a new user account.
+        PatchUserRequest:
+            type: object
+            properties:
+                user_id:
+                    type: string
+                user:
+                    $ref: '#/components/schemas/User'
+            required:
+                - user_id
+                - user
+            description: |-
+                PatchUserRequest is used to partially update an existing user
+
+                 Contains the user ID and the fields to be updated.
+    securitySchemes:
+        oauth2:
+            type: oauth2
+            description: OAuth2 authentication with authorization code flow
+            flows:
+                authorizationCode:
+                    authorizationUrl: https://auth.test.com/oauth/authorize
+                    tokenUrl: https://auth.test.com/oauth/token
+                    refreshUrl: https://auth.test.com/oauth/refresh
+                    scopes:
+                        read: Read access to user data
+                        write: Write access to user data
+                        admin: Administrative access
+        http:
+            type: http
+            description: Bearer token authentication
+            scheme: bearer
+            bearerFormat: JWT
+        apiKey:
+            type: apiKey
+            description: API key authentication
+            name: X-API-Key
+            in: header
+security:
+    - oauth2:
+        - read
+    - apiKey: []
+tags:
+    - name: users
+      description: User management operations including CRUD operations and user status management
+      externalDocs:
+        description: Find more information about user management
+        url: https://test.com/docs/users
+    - name: user-profile
+      description: Operations related to user profile management and updates
+      externalDocs:
+        description: Learn more about user profiles
+        url: https://test.com/docs/user-profiles
+    - name: user-status
+      description: Operations for managing user status and account state
+      externalDocs:
+        description: User status management documentation
+        url: https://test.com/docs/user-status
+externalDocs:
+    description: Find more information about the User Management API
+    url: https://test.com/docs/api

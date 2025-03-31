@@ -27,3 +27,7 @@ Thumbs.db
 /testdata/*.pb.go
 *.openapi.json 
 *.openapi.yaml
+
+# Generated files that should be tracked
+!testdata/test.openapi.yaml
+!testdata/test.v2.openapi.yaml
