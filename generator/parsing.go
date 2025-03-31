@@ -7,6 +7,7 @@ import (
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 
+	v2options "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options"
 	"github.com/sapk/protoc-gen-openapiv3/options"
 )
 
@@ -23,6 +24,7 @@ type ParsedFile struct {
 	SecuritySchemes []*options.SecurityScheme
 	Security        []*options.SecurityRequirement
 	Tags            []*options.Tag
+	V2Swagger       *v2options.Swagger
 }
 
 // ParsedService represents a parsed service definition
@@ -147,6 +149,15 @@ func (g *OpenAPIGenerator) ParseProtoFile(file *protogen.File) (*ParsedFile, err
 			tags, ok := tagsExt.([]*options.Tag)
 			if ok {
 				parsed.Tags = tags
+			}
+		}
+
+		// Parse v2 Swagger options
+		v2SwaggerExt := proto.GetExtension(file.Desc.Options(), v2options.E_Openapiv2Swagger)
+		if v2SwaggerExt != nil {
+			swagger, ok := v2SwaggerExt.(*v2options.Swagger)
+			if ok {
+				parsed.V2Swagger = swagger
 			}
 		}
 	}
