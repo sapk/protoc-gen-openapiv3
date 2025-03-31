@@ -152,7 +152,18 @@ func convertV2ServerToV3(host, basePath string, schemes []v2options.Scheme) *opt
 	// Build the server URL
 	url := ""
 	if len(schemes) > 0 {
-		url = string(schemes[0]) + "://"
+		switch schemes[0] {
+		case v2options.Scheme_HTTP:
+			url = "http://"
+		case v2options.Scheme_HTTPS:
+			url = "https://"
+		case v2options.Scheme_WS:
+			url = "ws://"
+		case v2options.Scheme_WSS:
+			url = "wss://"
+		default:
+			url = "https://"
+		}
 	} else {
 		url = "https://"
 	}

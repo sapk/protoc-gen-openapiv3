@@ -78,13 +78,6 @@ paths:
                   schema:
                     type: object
                     properties:
-                        roles:
-                            type: array
-                            items:
-                                type: string
-                        created_after:
-                            type: string
-                            format: date-time
                         status:
                             type: string
                             enum:
@@ -92,6 +85,13 @@ paths:
                                 - USER_STATUS_INACTIVE
                                 - USER_STATUS_SUSPENDED
                             default: USER_STATUS_ACTIVE
+                        roles:
+                            type: array
+                            items:
+                                type: string
+                        created_after:
+                            type: string
+                            format: date-time
             responses:
                 "200":
                     description: Successfully retrieved user details
@@ -339,6 +339,8 @@ components:
         Address:
             type: object
             properties:
+                state:
+                    type: string
                 country:
                     type: string
                 postal_code:
@@ -346,8 +348,6 @@ components:
                 street:
                     type: string
                 city:
-                    type: string
-                state:
                     type: string
             required:
                 - street
@@ -361,30 +361,30 @@ components:
         User:
             type: object
             properties:
-                address:
-                    $ref: '#/components/schemas/Address'
-                created_at:
-                    type: string
-                    format: date-time
-                updated_at:
-                    type: string
-                    format: date-time
-                full_name:
-                    type: string
-                metadata:
-                    type: object
-                    additionalProperties:
-                        type: string
                 user_id:
                     type: string
-                email:
-                    type: string
-                status:
-                    $ref: '#/components/schemas/UserStatus'
                 roles:
                     type: array
                     items:
                         type: string
+                updated_at:
+                    type: string
+                    format: date-time
+                email:
+                    type: string
+                full_name:
+                    type: string
+                status:
+                    $ref: '#/components/schemas/UserStatus'
+                address:
+                    $ref: '#/components/schemas/Address'
+                metadata:
+                    type: object
+                    additionalProperties:
+                        type: string
+                created_at:
+                    type: string
+                    format: date-time
             required:
                 - user_id
                 - email
@@ -400,17 +400,17 @@ components:
         Error:
             type: object
             properties:
-                details:
-                    type: object
-                    additionalProperties:
-                        type: string
-                        description: Additional error details
                 message:
                     type: string
                     description: A human-readable error message
                 code:
                     type: integer
                     description: A machine-readable error code
+                details:
+                    type: object
+                    additionalProperties:
+                        type: string
+                        description: Additional error details
             required:
                 - message
                 - code
