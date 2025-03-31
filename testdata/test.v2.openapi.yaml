@@ -261,8 +261,9 @@ paths:
       tags:
         - UserService
 security:
-  - apiKey:
+  - oauth2:
       - read
+  - apiKey:
       - ""
 servers:
   - description: Server for test.com

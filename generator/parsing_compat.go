@@ -93,17 +93,13 @@ func (g *OpenAPIGenerator) convertV2ToV3(parsed *ParsedFile) error {
 	// Convert security requirements
 	if parsed.V2Swagger.Security != nil {
 		for _, req := range parsed.V2Swagger.Security {
-			v3Req := &options.SecurityRequirement{
-				Name:   "",
-				Scopes: make([]string, 0),
-			}
-
 			for name, value := range req.SecurityRequirement {
-				v3Req.Name = name
-				v3Req.Scopes = append(v3Req.Scopes, value.Scope...)
+				v3Req := &options.SecurityRequirement{
+					Name:   name,
+					Scopes: value.Scope,
+				}
+				parsed.Security = append(parsed.Security, v3Req)
 			}
-
-			parsed.Security = append(parsed.Security, v3Req)
 		}
 	}
 
