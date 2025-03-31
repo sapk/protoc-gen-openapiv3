@@ -256,7 +256,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 						method.Parameters = append(method.Parameters, &options.Parameter{
 							Name:        param,
 							In:          "path",
-							Required:    true,
+							Required:    pointerTo(true),
 							Schema:      &options.Schema{Type: "string"},
 							Description: fmt.Sprintf("Path parameter %s", param),
 						})
@@ -284,7 +284,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 						param := &options.Parameter{
 							Name:        field.Name,
 							In:          "query",
-							Required:    !strings.HasPrefix(field.Type, "optional"),
+							Required:    pointerTo(!strings.HasPrefix(field.Type, "optional")),
 							Description: fmt.Sprintf("Query parameter %s", field.Name),
 						}
 
@@ -305,7 +305,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 							}
 
 							param.Style = "form"
-							param.Explode = true
+							param.Explode = pointerTo(true)
 						} else {
 							param.Schema = convertFieldToSchema(&field, parsedFile, doc)
 						}
@@ -313,7 +313,8 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 						method.Parameters = append(method.Parameters, param)
 					}
 				}
-				// Add parameters from operation annotation first
+
+				// Add parameters from operation
 				if len(method.Parameters) > 0 {
 					operation.Parameters = make([]*high.Parameter, len(method.Parameters))
 					for i, param := range method.Parameters {
@@ -321,11 +322,11 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 							Name:            param.GetName(),
 							In:              param.GetIn(),
 							Description:     param.GetDescription(),
-							Required:        &param.Required,
+							Required:        param.Required,
 							Deprecated:      param.GetDeprecated(),
 							AllowEmptyValue: param.GetAllowEmptyValue(),
 							Style:           param.GetStyle(),
-							Explode:         &param.Explode,
+							Explode:         param.Explode,
 							AllowReserved:   param.GetAllowReserved(),
 							Schema:          convertSchemaToOpenAPI(param.GetSchema(), doc),
 						}
@@ -677,7 +678,6 @@ func handleEnum(parsedFile *ParsedFile, name string, doc *high.Document) *option
 	schema := &options.Schema{
 		Type:        "string",
 		Enum:        make([]string, len(enum.Values)),
-		Default:     enum.Values[0].Name,
 		Description: strings.TrimSpace(enum.Comment),
 	}
 	for i, value := range enum.Values {
@@ -847,6 +847,14 @@ func convertSchemaToOpenAPI(schema *options.Schema, doc *high.Document) *base.Sc
 				Value: value,
 			}
 		}
+		if schema.GetDefault() != "" {
+			openAPISchema.Default = &yaml.Node{
+				Kind:  yaml.ScalarNode,
+				Value: schema.GetDefault(),
+			}
+		} else if len(openAPISchema.Enum) > 0 {
+			openAPISchema.Default = openAPISchema.Enum[0]
+		}
 	}
 
 	// Set numeric constraints
@@ -1005,4 +1013,8 @@ func hasParameter(params []*options.Parameter, name, in string) bool {
 		}
 	}
 	return false
+}
+
+func pointerTo[T any](value T) *T {
+	return &value
 }
