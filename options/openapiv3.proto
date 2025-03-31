@@ -153,13 +153,13 @@ message Schema {
   // The enumerated values for the schema
   repeated string enum = 20;
   // Whether the schema can be null
-  bool nullable = 21;
+  optional bool nullable = 21;
   // The discriminator for polymorphism
   Discriminator discriminator = 22;
   // Whether the schema is read-only
-  bool read_only = 23;
+  optional bool read_only = 23;
   // Whether the schema is write-only
-  bool write_only = 24;
+  optional bool write_only = 24;
   // The XML representation of the schema
   XML xml = 25;
   // Additional external documentation
@@ -167,7 +167,7 @@ message Schema {
   // An example of the schema
   string example = 27;
   // Whether the schema is deprecated
-  bool deprecated = 28;
+  optional bool deprecated = 28;
   // For array types, the schema of the items
   Schema items = 29;
   // Reference to another schema

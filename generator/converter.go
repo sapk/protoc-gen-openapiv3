@@ -250,16 +250,9 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 					operation.Deprecated = &method.Operation.Deprecated
 				}
 
+				// Add path parameters that aren't already defined
 				for _, param := range pathParams {
-					var found bool
-					for _, mParam := range method.Parameters {
-						if mParam.GetName() == param && mParam.GetIn() == "path" {
-							// Found matching parameter, no need to add it again
-							found = true
-							break
-						}
-					}
-					if !found {
+					if !hasParameter(method.Parameters, param, "path") {
 						method.Parameters = append(method.Parameters, &options.Parameter{
 							Name:        param,
 							In:          "path",
@@ -270,6 +263,56 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 					}
 				}
 
+				// Find the input message type
+				var inputMessage *ParsedMessage
+				for _, msg := range parsedFile.Messages {
+					if msg.Name == method.InputType {
+						inputMessage = &msg
+						break
+					}
+				}
+
+				// Add query parameters from input message fields
+				if inputMessage != nil {
+					for _, field := range inputMessage.Fields {
+						// Skip fields that are in the path or body
+						if hasParameter(method.Parameters, field.Name, "path") || field.Name == method.HTTPBody { // TODO store body field in method	parameters ?
+							continue
+						}
+
+						// Create query parameter
+						param := &options.Parameter{
+							Name:        field.Name,
+							In:          "query",
+							Required:    !strings.HasPrefix(field.Type, "optional"),
+							Description: fmt.Sprintf("Query parameter %s", field.Name),
+						}
+
+						// Handle array type for query parameters
+						if strings.HasPrefix(field.Type, "repeated ") {
+							itemType := strings.TrimPrefix(field.Type, "repeated ")
+							schema := createSchema(itemType, strings.TrimSpace(field.Comment))
+							if schema != nil {
+								param.Schema = &options.Schema{
+									Type:  "array",
+									Items: schema,
+								}
+							} else {
+								param.Schema = &options.Schema{
+									Type:  "array",
+									Items: convertFieldToSchema(&field, parsedFile, doc),
+								}
+							}
+
+							param.Style = "form"
+							param.Explode = true
+						} else {
+							param.Schema = convertFieldToSchema(&field, parsedFile, doc)
+						}
+
+						method.Parameters = append(method.Parameters, param)
+					}
+				}
 				// Add parameters from operation annotation first
 				if len(method.Parameters) > 0 {
 					operation.Parameters = make([]*high.Parameter, len(method.Parameters))
@@ -319,17 +362,6 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 						}
 					}
 				}
-			} else {
-				for _, param := range pathParams { // ensure all path parameters are added
-					required := true
-					operation.Parameters = append(operation.Parameters, &high.Parameter{
-						Name:        param,
-						In:          "path",
-						Required:    &required,
-						Schema:      createPrimitiveSchema("string", ""),
-						Description: fmt.Sprintf("Path parameter %s", param),
-					})
-				}
 			}
 
 			// Set operation security requirements if present
@@ -340,62 +372,6 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 						Requirements: orderedmap.New[string, []string](),
 					}
 					operation.Security[i].Requirements.Set(req.GetName(), req.GetScopes())
-				}
-			}
-
-			// Find the input message type
-			var inputMessage *ParsedMessage
-			for _, msg := range parsedFile.Messages {
-				if msg.Name == method.InputType {
-					inputMessage = &msg
-					break
-				}
-			}
-
-			// Add query parameters from input message fields
-			if inputMessage != nil {
-				bodyField := method.HTTPBody
-				pathParamMap := make(map[string]bool)
-				for _, param := range operation.Parameters {
-					if param.In == "path" {
-						pathParamMap[param.Name] = true
-					}
-				}
-
-				for _, field := range inputMessage.Fields {
-					// Skip fields that are in the path or body
-					if pathParamMap[field.Name] || field.Name == bodyField { // TODO store body field in method	parameters ?
-						continue
-					}
-
-					// Create query parameter
-					required := !strings.HasPrefix(field.Type, "optional")
-					param := &high.Parameter{
-						Name:        field.Name,
-						In:          "query",
-						Required:    &required,
-						Description: fmt.Sprintf("Query parameter %s", field.Name),
-					}
-
-					// Handle array type for query parameters
-					if strings.HasPrefix(field.Type, "repeated ") {
-						itemType := strings.TrimPrefix(field.Type, "repeated ")
-						if schema := createPrimitiveSchema(itemType, strings.TrimSpace(field.Comment)); schema != nil {
-							explode := true
-							param.Schema = base.CreateSchemaProxy(&base.Schema{
-								Type: []string{"array"},
-								Items: &base.DynamicValue[*base.SchemaProxy, bool]{
-									A: schema,
-								},
-							})
-							param.Style = "form"
-							param.Explode = &explode
-						}
-					} else {
-						param.Schema = convertFieldToSchema(&field, parsedFile, doc)
-					}
-
-					operation.Parameters = append(operation.Parameters, param)
 				}
 			}
 
@@ -421,7 +397,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 							if msg.Name == refName {
 								// Convert the message to schema and add it to components
 								msgSchema := convertMessageToSchema(parsedFile, msg.Name, doc)
-								doc.Components.Schemas.Set(refName, msgSchema)
+								doc.Components.Schemas.Set(refName, convertSchemaToOpenAPI(msgSchema, doc))
 								break
 							}
 						}
@@ -465,7 +441,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 				}
 				if _, has := operation.RequestBody.Content.Get("application/json"); !has {
 					operation.RequestBody.Content.Set("application/json", &high.MediaType{
-						Schema: convertMessageToSchema(parsedFile, method.InputType, doc),
+						Schema: convertSchemaToOpenAPI(convertMessageToSchema(parsedFile, method.InputType, doc), doc),
 					})
 				}
 			}
@@ -492,7 +468,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 										if msg.Name == refName {
 											// Convert the message to schema and add it to components
 											msgSchema := convertMessageToSchema(parsedFile, msg.Name, doc)
-											doc.Components.Schemas.Set(refName, msgSchema)
+											doc.Components.Schemas.Set(refName, convertSchemaToOpenAPI(msgSchema, doc))
 											break
 										}
 									}
@@ -553,7 +529,7 @@ func ConvertToOpenAPI(parsedFile *ParsedFile) (*high.Document, error) {
 				if method.OutputType != "google.protobuf.Empty" {
 					response.Content = orderedmap.New[string, *high.MediaType]()
 					response.Content.Set("application/json", &high.MediaType{
-						Schema: convertMessageToSchema(parsedFile, method.OutputType, doc),
+						Schema: convertSchemaToOpenAPI(convertMessageToSchema(parsedFile, method.OutputType, doc), doc),
 					})
 				}
 
@@ -601,13 +577,13 @@ func extractPathParameters(path string) []string {
 }
 
 // convertMessageToSchema converts a message to a schema
-func convertMessageToSchema(parsedFile *ParsedFile, messageName string, doc *high.Document) *base.SchemaProxy {
+func convertMessageToSchema(parsedFile *ParsedFile, messageName string, doc *high.Document) *options.Schema {
 	// Create a map to track schemas being processed
 	processingSchemas := make(map[string]bool)
 
 	// Inner function to handle the actual conversion
-	var convert func(string) *base.SchemaProxy
-	convert = func(name string) *base.SchemaProxy {
+	var convert func(string) *options.Schema
+	convert = func(name string) *options.Schema {
 		// Check if we're already processing this schema
 		if processingSchemas[name] {
 			// If we are, create a reference to avoid infinite recursion
@@ -616,7 +592,7 @@ func convertMessageToSchema(parsedFile *ParsedFile, messageName string, doc *hig
 				parts := strings.Split(name, ".")
 				refName = parts[len(parts)-1]
 			}
-			return base.CreateSchemaProxyRef(fmt.Sprintf("#/components/schemas/%s", refName))
+			return &options.Schema{Ref: fmt.Sprintf("#/components/schemas/%s", refName)}
 		}
 
 		// Mark this schema as being processed
@@ -642,7 +618,7 @@ func convertMessageToSchema(parsedFile *ParsedFile, messageName string, doc *hig
 }
 
 // handleMessage handles conversion of a message type to a schema
-func handleMessage(parsedFile *ParsedFile, name string, doc *high.Document) *base.SchemaProxy {
+func handleMessage(parsedFile *ParsedFile, name string, doc *high.Document) *options.Schema {
 	if parsedFile == nil {
 		return nil
 	}
@@ -660,9 +636,9 @@ func handleMessage(parsedFile *ParsedFile, name string, doc *high.Document) *bas
 	}
 
 	// Create the schema
-	schema := &base.Schema{
-		Type:        []string{"object"},
-		Properties:  orderedmap.New[string, *base.SchemaProxy](),
+	schema := &options.Schema{
+		Type:        "object",
+		Properties:  map[string]*options.Schema{},
 		Required:    make([]string, 0),
 		Description: strings.TrimSpace(message.Comment),
 	}
@@ -670,19 +646,17 @@ func handleMessage(parsedFile *ParsedFile, name string, doc *high.Document) *bas
 	// Convert fields to properties
 	for _, field := range message.Fields {
 		property := convertFieldToSchema(&field, parsedFile, doc)
-		schema.Properties.Set(field.Name, property)
+		schema.Properties[field.Name] = property
 		if !strings.HasPrefix(field.Type, "optional") {
 			schema.Required = append(schema.Required, field.Name)
 		}
 	}
 
-	// Create the schema proxy and store it in components
-	schemaProxy := base.CreateSchemaProxy(schema)
-	return schemaProxy
+	return schema
 }
 
 // handleEnum handles conversion of an enum type to a schema
-func handleEnum(parsedFile *ParsedFile, name string, doc *high.Document) *base.SchemaProxy {
+func handleEnum(parsedFile *ParsedFile, name string, doc *high.Document) *options.Schema {
 	if parsedFile == nil {
 		return nil
 	}
@@ -700,28 +674,25 @@ func handleEnum(parsedFile *ParsedFile, name string, doc *high.Document) *base.S
 	}
 
 	// Create enum schema
-	schema := &base.Schema{
-		Type:        []string{"string"},
-		Enum:        make([]*yaml.Node, len(enum.Values)),
+	schema := &options.Schema{
+		Type:        "string",
+		Enum:        make([]string, len(enum.Values)),
+		Default:     enum.Values[0].Name,
 		Description: strings.TrimSpace(enum.Comment),
 	}
 	for i, value := range enum.Values {
-		schema.Enum[i] = &yaml.Node{
-			Kind:  yaml.ScalarNode,
-			Value: value.Name,
-		}
+		schema.Enum[i] = value.Name
 	}
 
 	if len(schema.Enum) > 0 {
 		schema.Default = schema.Enum[0]
 	}
 
-	schemaProxy := base.CreateSchemaProxy(schema)
-	return schemaProxy
+	return schema
 }
 
 // handleReference handles conversion of a reference type to a schema
-func handleReference(name string, doc *high.Document, convert func(string) *base.SchemaProxy) *base.SchemaProxy {
+func handleReference(name string, doc *high.Document, convert func(string) *options.Schema) *options.Schema {
 	// Strip package name from the reference
 	refName := name
 	if strings.Contains(name, ".") {
@@ -732,76 +703,76 @@ func handleReference(name string, doc *high.Document, convert func(string) *base
 	// Check if the schema already exists in components
 	if _, exists := doc.Components.Schemas.Get(refName); !exists {
 		schema := convert(refName)
-		doc.Components.Schemas.Set(refName, schema)
+		if schema != nil {
+			doc.Components.Schemas.Set(refName, convertSchemaToOpenAPI(schema, doc))
+		}
 	}
 
-	return base.CreateSchemaProxyRef(fmt.Sprintf("#/components/schemas/%s", refName))
+	return &options.Schema{
+		Ref: fmt.Sprintf("#/components/schemas/%s", refName),
+	}
 }
 
-// createPrimitiveSchema creates a schema for a primitive type
-func createPrimitiveSchema(primitiveType string, description string) *base.SchemaProxy {
+// createSchema creates a schema for a primitive type
+func createSchema(primitiveType string, description string) *options.Schema {
 	switch primitiveType {
 	case "string":
-		return base.CreateSchemaProxy(&base.Schema{
-			Type:        []string{"string"},
+		return &options.Schema{
+			Type:        "string",
 			Description: description,
-		})
+		}
 	case "bytes":
-		return base.CreateSchemaProxy(&base.Schema{
-			Type:        []string{"string"},
+		return &options.Schema{
+			Type:        "string",
 			Description: description,
-		})
+		}
 	case "int32", "int64", "uint32", "uint64":
-		return base.CreateSchemaProxy(&base.Schema{
-			Type:        []string{"integer"},
+		return &options.Schema{
+			Type:        "integer",
 			Description: description,
-		})
+		}
 	case "float", "double":
-		return base.CreateSchemaProxy(&base.Schema{
-			Type:        []string{"number"},
+		return &options.Schema{
+			Type:        "number",
 			Description: description,
-		})
+		}
 	case "bool":
-		return base.CreateSchemaProxy(&base.Schema{
-			Type:        []string{"boolean"},
+		return &options.Schema{
+			Type:        "boolean",
 			Description: description,
-		})
+		}
 	case "google.protobuf.Timestamp":
-		return base.CreateSchemaProxy(&base.Schema{
-			Type:        []string{"string"},
+		return &options.Schema{
+			Type:        "string",
 			Format:      "date-time",
 			Description: description,
-		})
+		}
 	case "google.protobuf.Empty":
-		return base.CreateSchemaProxy(nil)
+		return nil
 	default:
 		return nil
 	}
 }
 
 // convertFieldToSchema converts a field to a schema
-func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile, doc *high.Document) *base.SchemaProxy {
+func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile, doc *high.Document) *options.Schema {
 	// Handle special types
 	if strings.HasPrefix(field.Type, "repeated ") {
 		itemType := strings.TrimPrefix(field.Type, "repeated ")
 		// For primitive types, create the schema directly
-		if schema := createPrimitiveSchema(itemType, strings.TrimSpace(field.Comment)); schema != nil {
-			return base.CreateSchemaProxy(&base.Schema{
-				Type: []string{"array"},
-				Items: &base.DynamicValue[*base.SchemaProxy, bool]{
-					A: schema,
-				},
+		if schema := createSchema(itemType, strings.TrimSpace(field.Comment)); schema != nil {
+			return &options.Schema{
+				Type:        "array",
+				Items:       schema,
 				Description: strings.TrimSpace(field.Comment),
-			})
+			}
 		}
 		// For message types, create a reference
-		return base.CreateSchemaProxy(&base.Schema{
-			Type: []string{"array"},
-			Items: &base.DynamicValue[*base.SchemaProxy, bool]{
-				A: convertMessageToSchema(parsedFile, itemType, doc),
-			},
+		return &options.Schema{
+			Type:        "array",
+			Items:       convertMessageToSchema(parsedFile, itemType, doc),
 			Description: strings.TrimSpace(field.Comment),
-		})
+		}
 	}
 
 	if strings.HasPrefix(field.Type, "optional ") {
@@ -815,32 +786,32 @@ func convertFieldToSchema(field *ParsedField, parsedFile *ParsedFile, doc *high.
 		mapType = strings.TrimSuffix(mapType, ">")
 		parts := strings.Split(mapType, ", ")
 		if len(parts) != 2 {
-			return base.CreateSchemaProxy(&base.Schema{
-				Type:        []string{"object"},
+			return &options.Schema{
+				Type:        "object",
 				Description: strings.TrimSpace(field.Comment),
-			})
+			}
 		}
 		valueType := parts[1]
 
 		// Handle primitive value types directly
-		var valueSchema *base.SchemaProxy
-		if schema := createPrimitiveSchema(valueType, strings.TrimSpace(field.Comment)); schema != nil {
+		var valueSchema *options.Schema
+		if schema := createSchema(valueType, strings.TrimSpace(field.Comment)); schema != nil {
 			valueSchema = schema
 		} else {
 			// For message types, create a reference
 			valueSchema = convertMessageToSchema(parsedFile, valueType, doc)
 		}
 
-		return base.CreateSchemaProxy(&base.Schema{
-			Type: []string{"object"},
-			AdditionalProperties: &base.DynamicValue[*base.SchemaProxy, bool]{
-				A: valueSchema,
+		return &options.Schema{
+			Type: "object",
+			AdditionalProperties: &options.Schema_AdditionalSchema{
+				AdditionalSchema: valueSchema,
 			},
-		})
+		}
 	}
 
 	// Handle primitive types
-	if schema := createPrimitiveSchema(field.Type, strings.TrimSpace(field.Comment)); schema != nil {
+	if schema := createSchema(field.Type, strings.TrimSpace(field.Comment)); schema != nil {
 		return schema
 	}
 
@@ -860,18 +831,21 @@ func convertSchemaToOpenAPI(schema *options.Schema, doc *high.Document) *base.Sc
 		Description: schema.GetDescription(),
 		Title:       schema.GetTitle(),
 		Default:     &yaml.Node{Value: schema.GetDefault()},
-		Enum:        make([]*yaml.Node, len(schema.GetEnum())),
-		Nullable:    &schema.Nullable,
-		ReadOnly:    &schema.ReadOnly,
-		WriteOnly:   &schema.WriteOnly,
-		Deprecated:  &schema.Deprecated,
+		Enum:        nil,
+		Nullable:    schema.Nullable,
+		ReadOnly:    schema.ReadOnly,
+		WriteOnly:   schema.WriteOnly,
+		Deprecated:  schema.Deprecated,
 	}
 
 	// Set enum values
-	for i, value := range schema.GetEnum() {
-		openAPISchema.Enum[i] = &yaml.Node{
-			Kind:  yaml.ScalarNode,
-			Value: value,
+	if len(schema.GetEnum()) > 0 {
+		openAPISchema.Enum = make([]*yaml.Node, len(schema.GetEnum()))
+		for i, value := range schema.GetEnum() {
+			openAPISchema.Enum[i] = &yaml.Node{
+				Kind:  yaml.ScalarNode,
+				Value: value,
+			}
 		}
 	}
 
@@ -1021,4 +995,14 @@ func convertServerToOpenAPI(server *options.Server) *high.Server {
 	}
 
 	return openAPIServer
+}
+
+// hasParameter checks if a parameter with the given name and location exists
+func hasParameter(params []*options.Parameter, name, in string) bool {
+	for _, param := range params {
+		if param.GetName() == name && param.GetIn() == in {
+			return true
+		}
+	}
+	return false
 }
