@@ -32,6 +32,25 @@ components:
       required:
         - user
       type: object
+    Error:
+      description: Error represents a standard API error response
+      properties:
+        code:
+          description: A machine-readable error code
+          type: integer
+        details:
+          additionalProperties:
+            description: Additional error details
+            type: string
+          type: object
+        message:
+          description: A human-readable error message
+          type: string
+      required:
+        - message
+        - code
+        - details
+      type: object
     ListUsersResponse:
       description: "ListUsersResponse contains the list of users and pagination information\n\n Returns the filtered list of users \n along with pagination metadata."
       properties:
@@ -174,7 +193,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListUsersResponse'
-          description: Response for ListUsers operation
+          description: Successfully retrieved list of users
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Invalid request parameters
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Insufficient permissions to list users
+      security:
+        - oauth2:
+            - read
       summary: ListUsers retrieves a list of users with optional filtering
       tags:
         - UserService
@@ -188,12 +222,33 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateUserRequest'
       responses:
-        "200":
+        "201":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-          description: Response for CreateUser operation
+          description: User successfully created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Invalid user data provided
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Insufficient permissions to create user
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: User with provided email already exists
+      security:
+        - oauth2:
+            - write
       summary: CreateUser creates a new user
       tags:
         - UserService
@@ -201,31 +256,88 @@ paths:
     delete:
       description: Permanently removes a user from the system.
       operationId: DeleteUser
-      parameters: []
+      parameters:
+        - description: Path parameter user_id
+          in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
       responses:
-        "200":
-          description: Response for DeleteUser operation
+        "204":
+          description: User successfully deleted
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Insufficient permissions to delete user
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: User not found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: User cannot be deleted due to existing dependencies
+      security:
+        - oauth2:
+            - admin
       summary: DeleteUser deletes a user
       tags:
         - UserService
     get:
-      description: Returns the full user details including profile information, status, and metadata.
+      description: Returns the full user details including profile information, status, and metadata. (override)
       operationId: GetUser
-      parameters: []
+      parameters:
+        - description: API version to use
+          in: header
+          name: version
+          required: false
+          schema:
+            type: string
+        - description: Path parameter user_id
+          in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-          description: Response for GetUser operation
-      summary: GetUser retrieves a user by ID
+          description: Successfully retrieved user details
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Insufficient permissions to access user
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: User not found
+      summary: GetUser retrieves a user by ID (override)
       tags:
         - UserService
     patch:
       description: Updates only the specified fields of an existing user while preserving other fields.
       operationId: PatchUser
-      parameters: []
+      parameters:
+        - description: Path parameter user_id
+          in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -237,14 +349,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-          description: Response for PatchUser operation
+          description: User successfully updated
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Invalid user data provided
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Insufficient permissions to update user
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: User not found
+      security:
+        - oauth2:
+            - write
       summary: PatchUser partially updates an existing user
       tags:
         - UserService
     put:
       description: Updates all fields of an existing user with the provided values.
       operationId: UpdateUser
-      parameters: []
+      parameters:
+        - description: Path parameter user_id
+          in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -256,15 +395,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-          description: Response for UpdateUser operation
+          description: User successfully updated
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Invalid user data provided
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Insufficient permissions to update user
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: User not found
+      security:
+        - oauth2:
+            - write
       summary: UpdateUser updates an existing user
       tags:
         - UserService
 security:
-  - oauth2:
-      - read
   - apiKey:
       - ""
+  - oauth2:
+      - read
 servers:
   - description: Server for test.com
     url: https://test.com/v1

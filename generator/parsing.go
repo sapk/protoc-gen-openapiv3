@@ -286,6 +286,24 @@ func (g *OpenAPIGenerator) parseMethod(method *protogen.Method) (ParsedMethod, e
 				parsed.Parameters = operation.GetParameters()
 			}
 		}
+
+		// Parse v2 Operation annotation
+		v2OperationExt := proto.GetExtension(method.Desc.Options(), v2options.E_Openapiv2Operation)
+		if v2OperationExt != nil {
+			v2Operation, ok := v2OperationExt.(*v2options.Operation)
+			if ok {
+				// Convert v2 operation to v3 format
+				parsed.Operation = convertV2OperationToV3(v2Operation)
+				// Parse security requirements if present
+				parsed.Security = parsed.Operation.GetSecurity()
+				// Parse responses
+				parsed.Responses = parsed.Operation.GetResponses()
+				// Parse request body if present
+				parsed.RequestBody = parsed.Operation.GetRequestBody()
+				// Parse parameters if present
+				parsed.Parameters = parsed.Operation.GetParameters()
+			}
+		}
 	}
 
 	return parsed, nil
